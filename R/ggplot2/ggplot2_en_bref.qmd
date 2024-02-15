@@ -1,0 +1,364 @@
+---
+title: "ggplot2 en bref"
+format: html
+visual: true
+---
+
+## Ressources
+
+ggplot2: <https://ggplot2.tidyverse.org/index.html>
+
+Notre présentation: <https://we-data-ch.github.io/TakeOver_Dataviz_R/Presentation/DataViz_With_R.html#1>
+
+## Introduction à la grammaire des graphiques
+
+### Mise en place
+
+**Librairie**
+
+```{r}
+library(ggplot2)
+```
+
+**Données**
+
+```{r}
+mpg
+```
+
+### Base
+
+#### ggplot et aes
+
+Base d'un graphique ggplot2:
+
+-   La fonction `ggplot()` crée l'objet ggplot (graphique) et forme la structure de base du graphique.
+
+-   La fonction `aes()` permet de distribuer les variables dans différentes dimensions.
+
+```{r}
+ggplot()
+```
+
+#### geom\_\* et aes
+
+Ajout de formes géométriques:
+
+-   Les fonctions `geom_*()` permettent d'ajouter des "géométries" au graphique. Les géométrie constituent des couches et peuvent se superposer.
+
+-   La fonction `aes()` peut aussi changer de place. Elle peut être:
+
+    -   Dans la fonction `ggplot()`
+
+    -   Dans une fonction `geom_()`
+
+    -   À l'extérieur
+
+-   C'est la dernière fonction `aes()` qui compte.
+
+```{r}
+ggplot(mpg, aes(displ, cty, color = class)) + # aes() peut changer de place
+  geom_point()
+```
+
+#### Autres aesthetics
+
+En plus de x et y, il existe d'autres manières de représenter les dimensions:
+
+-   Color/colour: Couleur des extrémités
+
+-   Fill: Colour de remplissage
+
+-   Shape: Forme des points
+
+-   Linetype: Type de ligne
+
+-   Alpha: Opacité (0, 1)
+
+-   Size/linewidth: Taille
+
+-   Group: Utilisé implicitement dans les autres, mais pratique pour les séparations sans spécification.
+
+-   etc.
+
+```{r}
+ggplot(mpg, aes(displ, cty, color = class)) + # color/fill? aes/fix?
+  geom_point()
+```
+
+#### labs
+
+Ajout de label pour améliorer la compréhension du graphique:
+
+-   La fonction `labs()` permet d'ajouter des informations textuelles par exemple un titre, un sous-titre ou le nom des axes.
+
+```{r}
+ggplot(mpg, aes(displ, cty, color = class)) +
+  geom_point() +
+  labs(title = "Titre",
+       subtitle = "Sous-titre",
+       caption = "Fait par X",
+       tag = "A",
+       x = "Display",
+       y = "City",
+       color = "Class")
+```
+
+#### Thème
+
+-   La fonction `theme()` permet d'avoir des paramétrages très personnalisés
+
+-   Les fonctions `theme_*()` permettent d'avoir un thème général et prédéfini
+
+```{r}
+ggplot(mpg, aes(displ, cty, color = class)) +
+  geom_point() +
+  labs(title = "Titre",
+       subtitle = "Sous-titre",
+       caption = "Fait par X",
+       tag = "A",
+       x = "Display",
+       y = "City",
+       color = "Class") +
+  theme(legend.position = "none") +
+  theme_classic()
+```
+
+-   La fonction `theme_set()` permet d'appliquer un thème prédéfini à tous les graphiques qui suivent
+
+-   La fonction `theme_update()` permet d'appliquer des paramétrages personnalisés à tous les graphiques qui suivent.
+
+```{r}
+theme_set(theme_classic())
+theme_update(legend.position = "none")
+```
+
+#### ggsave
+
+Pour enregistrer gérer et enregistrer les graphique:
+
+-   Tout graphique ggplot pour être modifié plus tard du moment que ces graphiques sont stockés dans des objets.
+
+-   Il est possible d'exporter les graphique manuellement (peu recommandé)
+
+-   Il est aussi possible de les enregistrer avec `ggsave()` (bonne option)
+
+-   Le plus simple reste d'intégrer les graphiques à un codebook comme Rmarkdown ou Quarto
+
+```{r}
+ggplot(mpg, aes(displ, cty, color = class)) +
+  geom_point() +
+  labs(title = "Titre",
+       subtitle = "Sous-titre",
+       caption = "Fait par X",
+       tag = "A",
+       x = "Display",
+       y = "City",
+       color = "Class") +
+  theme(legend.position = "none") +
+  theme_classic()
+
+ggsave("test.png", width = 15, height = 10, units = "cm")
+
+```
+
+## Variable continue ou catégorielle
+
+**Variable catégorielle** Une **variable catégorielle**, également appelée variable nominale, représente des données qui sont divisées en **catégories distinctes** ou en **groupes non numériques**. Chaque catégorie est **discrète** et **ne peut pas être mesurée mathématiquement**.
+
+Exemples:
+
+-   les couleurs (rouge, vert, bleu)
+
+-   les types de voitures (compacte, berline, SUV)
+
+**Variable continue** D'un autre côté, une **variable continue** représente des données qui peuvent prendre une **gamme infinie** de valeurs numériques dans un intervalle donné. Ces valeurs sont **mesurables mathématiquement** et **peuvent inclure des nombres décimaux.**
+
+Exemples:
+
+-   la température
+
+-   la taille d'un objet en centimètres
+
+-   les revenus annuels
+
+En illustration:
+
+```{mermaid}
+graph LR
+  A[Variable Catégorielle] -->|Ordinale| B(1, 2, 3)
+  A -->|Nominale| E(bleu, vert, rouge)
+  C[Variable Continue] -->|Valeurs Numériques| D(1.5, 2.7, 3.2)
+```
+
+**Distribution univariée vs bivariée vs multivariée:**
+
+-   **Distribution univariée :** Analyser la distribution d'une seule variable pour comprendre ses caractéristiques et ses tendances.
+-   **Distribution bivariée :** Explorer la relation entre deux variables pour comprendre leur corrélation ou leur interaction.
+-   **Distribution multivariée :** Mettre en évidence la relation entre plusieurs variables.
+
+## Distributions univariée
+
+### Variable catégorielle
+
+**1. Diagramme en barres (catégorielle) :** Un diagramme en barres est utilisé pour visualiser la distribution d'une variable catégorielle, telle que le *nombre de voitures par nombre de cylindres*.
+
+```{r}
+library(ggplot2)
+
+# Créer un diagramme en barres pour le nombre de voitures par nombre de cylindres
+ggplot(mpg, aes(x = factor(cyl))) +
+  geom_bar(color = "cyan") +
+  labs(title = "Diagramme en barres catégorielle nombre de cylindres",
+       x = "Nombre de cylindres",
+       y = "Nombre")
+```
+
+### Variable continue
+
+**1. Histogramme (continue) :** Un histogramme est utilisé pour visualiser la distribution d'une variable continue, telle que *les miles par gallon sur autoroute*.
+
+```{r}
+# Créer un histogramme pour les miles par gallon sur autoroute
+ggplot(mpg, aes(x = hwy)) +
+  geom_histogram(binwidth = 2, fill = "skyblue", color = "black") +
+  labs(title = "Histogramme MPG sur l'autoroute)",
+       x = "MPG sur l'autoroute",
+       y = "Fréquence")
+```
+
+**2. Graphique de densité kernel (continue) :** Un graphique de densité kernel est utilisé pour estimer la fonction de densité de probabilité d'une variable continue, telle que *les miles par gallon sur autoroute*.
+
+```{r}
+# Créer un graphique de densité kernel pour les miles par gallon sur autoroute
+ggplot(mpg, aes(x = hwy)) +
+  geom_density(fill = "purple") +
+  labs(title = "Graphique de densité kernel MPG sur l'autoroute",
+       x = "MPG sur l'autoroute",
+       y = "Densité")
+```
+
+**3. Boîte à Moustaches (continue) :** Une boîte à moustaches visualise la distribution et les statistiques sommaires d'une variable continue *les miles par gallon sur autoroute*.
+
+```{r}
+# Créer une boîte à moustaches pour les miles par gallon sur autoroute par classe de voiture
+ggplot(mpg, aes(x = class, y = hwy)) +
+  geom_boxplot(color = "red") +
+  labs(title = "Boîte à moustaches miles par gallon sur l'autoroute",
+       x = NULL,
+       y = "MPG sur l'autoroute")
+```
+
+## Distribution bivariée
+
+### Même type de variable catégorielle
+
+**1. Diagramme en barres (continue et catégorielle) :** Vous pouvez créer un diagramme en barres pour visualiser une variable catégorielle *le type de carburant* dans différentes *types de transmission*.
+
+```{r}
+# Créer un graphique en barres pour le type de carburant par type de transmission
+ggplot(mpg, aes(fl, fill = drv)) +
+  geom_bar() + # Position
+  labs(title = "Diagramme en barres du type de carburant par type de transmission",
+       x = "type de carburant",
+       y = "Compte",
+       fill = "Type de transmission")
+```
+
+**2. Nuage de point (catégorielle et catégorielle) :** Vous pouvez créer un nuage de point pour visualiser une variable catégorielle *le type de carburant* dans différentes *types de transmission*.
+
+```{r}
+# Créer un nuage de point pour le type de carburant par types de transmission.
+ggplot(mpg, aes(fl, drv)) +
+  geom_jitter() +
+  labs(title = "Nuage de point pour le type de carburant par types de transmission",
+       x = "type de carburant",
+       y = "Type de transmission")
+```
+
+**3. Nuage de point variante 2 (catégorielle et catégorielle) :** Vous pouvez créer un nuage de point pour visualiser une variable catégorielle *le type de carburant* dans différentes *types de transmission*.
+
+```{r}
+# Créer un nuage de point pour le type de carburant par types de transmission.
+ggplot(mpg, aes(fl, drv)) +
+  geom_jitter() +
+  labs(title = "Nuage de point (2) pour le type de carburant par types de transmission",
+       x = "type de carburant",
+       y = "Type de transmission")
+```
+
+### Même type de variable (continue)
+
+**1. Nuage de point (continue et continue) :** Vous pouvez créer un nuage de point pour visualiser deux variables continues *le cylindre du moteur (L)* et *les miles par gallon en ville*.
+
+```{r}
+# Créer un nuage de pour pour le cylindre du moteur et les miles par gallon en ville
+ggplot(mpg, aes(displ, cty)) +
+  geom_point() + # alpha et jitter et smouth
+  labs(title = "Graphique en Ligne MPG en Ville au fil des années",
+       x = "Année-Modèle",
+       y = "MPG en Ville")
+```
+
+**2. Graphique en ligne (continue et continue) :** Un graphique en ligne est utilisé pour visualiser les tendances ou les changements dans une variable continue.
+
+Librairie `dplyr` pour utiliser la `%>%` (pipe) et la fonction `filter()`.
+
+```{r}
+library(dplyr)
+```
+
+Données:
+
+```{r}
+txhousing
+```
+
+Résultat:
+
+```{r}
+# Créer un graphique en ligne pour les ventes de maisons au fil du temps
+txhousing %>% 
+  filter(city == "Austin") %>% 
+  ggplot(aes(x = date, y = sales)) +
+  geom_line() +
+  labs(title = "Graphique en ligne ventes de maisons au fil du temps)",
+       x = "Date",
+       y = "Ventes de maisons")
+```
+
+### Différents types de variables
+
+**1. Graphique de Densité Kernel (continue et catégorielle) :** Un graphique de densité kernel est utilisé pour estimer la fonction de densité de probabilité d'une variable continue, telle que *les miles par gallon sur autoroute*. Mais peut aussi représenter différente distributions par exemple dans *différentes classes de voitures*.
+
+```{r}
+# Créer un graphique de densité kernel pour les miles par gallon sur autoroute
+ggplot(mpg, aes(x = hwy, fill = class)) +
+  geom_density() + # Alpha
+  labs(title = "Graphique de Densité Kernel (MPG sur Autoroute)",
+       x = "MPG sur l'autoroute",
+       y = "Densité",
+       fill = "Classe de voiture")
+```
+
+**2. Diagramme en barres (continue et catégorielle) :** Vous pouvez créer un diagramme en barres groupé pour visualiser une variable continue (par exemple, les miles par gallon) dans différentes catégories (par exemple, les classes de voitures).
+
+```{r}
+# Créer un diagramme en barres groupé pour les miles par gallon par classe de voiture
+ggplot(mpg, aes(x = class, y = hwy)) +
+  geom_bar(stat = "summary", fun = "mean", fill = "green", color = "white") +
+  labs(title = "Diagramme en barres miles par gallon par classe de voiture)",
+       x = "Classe de voiture",
+       y = "Moyenne MPG sur l'autoroute")
+```
+
+**5. Boîte à Moustaches (continue et catégorielles) :** Une boîte à moustaches visualise la distribution et les statistiques sommaires d'une variable continue (par exemple, les miles par gallon sur autoroute) par différentes catégories (par exemple, les classes de voitures).
+
+```{r}
+# Créer une boîte à moustaches pour les miles par gallon sur autoroute par classe de voiture
+ggplot(mpg, aes(x = class, y = hwy, fill = class)) +
+  geom_boxplot() +
+  labs(title = "Boîte à moustaches MPG sur l'utoroute par classe de voiture",
+       x = "Classe de voiture",
+       y = "MPG sur l'autoroute")
+```
