@@ -1,0 +1,316 @@
+---
+title: "Base 2: Matrices et systèmes d'équations"
+author: Vestin Cyuzuzo Hategekimana
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+N'oubliez pas de nettoyer votre "Global Environnment" avec la fonction `rm(list=ls())`, pour éviter d'être encombré de variable. N'hésitez surtout pas à les supprimer si ce sont des exemples donnés dans les tutos, vous pouvez les recréer facilement. R-Studio n'est pas une cave, un peu d'ordre, ça aide en statistique.
+
+## Les fonctions
+
+Dans un premier temps nous allons observer plus en profondeur les fonctions et leur fonctionnement avant de nous lancer dans les matrices.
+
+Prenons la fonction `rnorm()` que nous allons analyser avec la fonction `help()` qui nous explique comment fonctionnent les fonctions:
+
+```{r}
+help(rnorm)
+# ou ?rnorm
+```
+
+Dans la fenêtre en bas à droite apparait sous l'onglet "Help" apparait un texte. Tout est écrit en anglais dans cette fenêtre. À chaque fois que vous utiliserez help(), vous aurez la même structure. Premièrement nous avons la description qui explique sommairement à quoi sert la fonction. Puis sous "Usage", nous avons des exemples génériques montrant la structure interne de la fonction (peut être longue). Sous "Arguments", il y a une explication détaillée de ce que sont les éléments de la structure interne. Sous "Détails", "Value" et "Note", il y a plus de détails sur la fonction. "Référence" indique la source du code et "See Also" montre d'autres fonctions proches. Finalement, sous "Examples" nous avons des exemples intéressants d'utilisation de la fonction. Lorsque vous utilisez la fonction `help()`, vous lirez principalement "Description", "Usage", "Arguments" et "Examples". Ce qui arrive aussi assez souvent, c'est de chercher des informations sur la fonction sur internet.
+
+Dans notre exemple, nous voyons que le rnorm permet de générer des nombres aléatoires suivant une distribution normale (plus d'information sur le tuto sur les probabilités). Sous "Usage", nous pouvons voir que la structure interne de la fonction ressemble à ça:
+
+```{r eval=FALSE}
+rnorm(n, mean = 0, sd = 1)
+```
+
+Si nous regardons sous "Arguments", nous pouvons voir que "n" représente le nombre d'observations, "mean" représente la moyenne de la distribution normale et que "sd" signifie l’écart type de la distribution normale. Avec ça nous comprenons que si nous donnons un nombre d'observations désiré, une moyenne et un écart-type la fonction `rnorm()` va nous générer aléatoirement n nombres provenant d'une distribution normale de moyenne "mean" et d'écart-type "sd".
+
+Imaginons que nous souhaitons 5 observations provenant d'une distribution normale de moyenne 10 et d'écart type 0.1. De manière générale, lorsque l'on souhaite utiliser une fonction, il faut spécifier chaque terme se trouvant sous l'onglet "Usage":
+
+```{r}
+rnorm(5, mean = 10, sd = 0.1)
+```
+
+Remarque: les espaces n'ont pas vraiment d'importance, vous pouvez ne pas en mettre comme vous pouvez en mettre 10'000 sans que ça perturbe R. Pour les sauts de paragraphe avec la touche "Enter", c'est pareil.
+
+Mais il n'est pas nécessaire d'inscrire tous les éléments en entier, tant qu'on respecte l'ordre. Utiliser les paramètres internes de la fonction permet de les mettre dans l'ordre qu'on souhaite ou d'en éviter. Par exemple, tout ce qui suit aboutit au même résultat:
+
+```{r}
+# Donnent tous le même résultat
+rnorm(5, mean = 10, sd = 0.1)
+rnorm(5, 10, 0.1)
+rnorm(5, sd = 0.1, mean = 10)
+```
+
+Remarque: Les résultats ne seront pas exactement les mémés puisque les nombres sont générés aléatoirement. Ce qui est important de constater pour confirmer que ces expressions donnent bien le même résultat, c'est d'avoir le même nombre de valeurs générées et que ces valeurs tournent autour de 10.
+
+Les valeurs d'une fonction sont aussi fixées à l'avance parfois. Si nous revenons sur la structure dans "Usage", nous pouvons voir qu'à l'exception de n, tous les paramètres ont une valeur fixée:
+
+```{r eval=FALSE}
+rnorm(n, mean = 0, sd = 1)
+```
+
+Cela signifie que lorsqu'on lance la fonction telle quelle en spécifiant le nombre d'observations souhaitées nous le faisons à partir d'une distribution normale de moyenne 0 et d'écart-type 1. étant donné le fait que l'écart type est assez élevé nous n'aurons pas énormément de valeurs centrées autour de 0. Nous allons donc en générer une grande quantité (1000) dans une variable (a), en faire la moyenne et l'écart-type pour la comparer à celle de notre variable test (b) servant de comparaison avec la formule complète:
+
+```{r}
+a <- rnorm(1000)
+b <- rnorm(1000, mean = 0, sd = 1)
+mean(a)
+mean(b)
+sd(a)
+sd(b)
+```
+
+Si tout se passe bien, nous aurons une moyenne proche de 0 et un écart-type proche de 1 pour les 2 variables. Donc les valeurs fixées correspondent bien.
+
+Maintenant, vous êtes prêt à explorer les fonctions vous-même.
+
+## Les matrices
+
+### Création
+
+Nous allons maintenant voir comment créer des matrices. Les matrices peuvent être considérées comme des tableaux d'éléments permettant de réaliser des calculs linéaires de manière simplifiée. Elles peuvent être créées entièrement à partir d'un vecteur ou être la combinaison de plusieurs vecteurs. Nous pouvons utiliser la fonction `matrix()` pour le premier cas et les fonctions `cbind()` et `rbind()` pour le second cas:
+
+```{r}
+# Nous créons trois vecteurs, de longueur 4 (a), 6 (b) et 9 (c)
+a <- c(4, 2, 8, 1)
+b <- rep(1, time = 6)
+c <- 1:9
+a
+b
+c
+
+# Nous créons des matrices carrées de dimension (2x2)
+matrix(a, nrow = 2, ncol = 2)
+# ou
+ma <- matrix(a, 2, 2)
+# ou
+matrix(c(6, 3, 2, 9), 2, 2)
+# ou
+ma <- matrix(c(6, 3, 2, 9), nrow = 2, ncol = 2)
+
+# Nous créons des matrices carrées de dimension (3x3)
+matrix(c, nrow = 3, ncol = 3)
+matrix(c(2, 6, 1, 4, 3, 5, 2, 7, 9), nrow = 3, ncol = 3)
+
+# Nous créons une matrice de dimension (2x3) et une de dimension (3x2)
+matrix(b, 2, 3)
+matrix(b, 3, 2)
+```
+
+Bref vous avez compris. En utilisant `rbind()` vous alignez les vecteurs par ligne et en utilisant `cbind()` vous les alignez par colonne: Nous créons 3 vecteurs a,b et ce contenant 1,2 et 3 dans leur série b=c=a\<-1:3 nous les alignons par ligne: rbind(a,b,c) nous les alignons par colonne: cbind(a,b,c).
+
+Remarques: pour `rbind()` et `cbind()` il faut avoir des vecteurs de même longueur pour que ça fonctionne. Remarquez que les lignes ou les colonnes des matrices prennent le nom des variables dépendamment de la fonction utilisée.
+
+### Calcul
+
+Naturellement, vous pouvez utiliser plusieurs opérateurs mathématiques comme pour les vecteurs. Sans oublier que pour les additions, soustractions, divisions et multiplications entre matrices, elles doivent avoir les mêmes dimensions. Lorsque vous tentez, ce genre de calcule, les opérations se passent élément par élément:
+
+```{r}
+# Création de matrices
+m0 <- matrix(rep(1, time = 9), 3, 3)
+m1 <- m0 * 2
+
+# Calcules
+m1 + m0
+m1 - m0
+m1 * m0
+m1 / m0
+m1^2
+sqrt(m1)
+```
+
+Pour réaliser un produit matriciel, il faut utiliser l'opérateur %\*% et respecter la règle de multiplication, c'est-à-dire, il faut que le nombre de colonnes de la matrice à gauche soit égal au nombre de ligne de la matrice à droite:
+
+```{r}
+# Création de matrices
+a <- c(4, 2, 8, 1)
+b <- rep(1, time = 6)
+c <- 1:9
+ma <- matrix(a, 2, 2)
+mb23 <- matrix(b, 2, 3)
+mb32 <- matrix(b, 3, 2)
+mc <- matrix(c, 3, 3)
+ma
+mb23
+mb32
+mc
+
+# Calculs
+ma %*% ma
+ma %*% mb23
+mb32 %*% ma
+mb23 %*% mb32
+mb32 %*% mb23
+mb23 %*% mc
+mc %*% mb32
+mc %*% mc
+```
+
+Cette opération est très utile, car elle va nous permettre de résoudre des systèmes d'équations linéaires. Mais avant ça nous allons présenter les fonctions propres aux matrices utilisables en plus de ceux présentés au tuto 2.
+
+### Sélection
+
+Premièrement, nous pouvons également cibler des parties d'une matrice. Créons une matrice avec 12 lignes et 8 colonnes (8x12):
+
+```{r}
+m0 <- matrix(1:96, 12, 8)
+m0
+```
+
+Nous pouvons cibler le 94éme élément de m0:
+
+```{r}
+m0[94]
+```
+
+Nous pouvons cibler les éléments 8 à 17 de m0:
+
+```{r}
+m0[8:17]
+```
+
+Nous pouvons cibles les éléments 82,34,90 et 7 de m0:
+
+```{r}
+m0[c(82, 34, 90, 7)]
+```
+
+Nous pouvons cibler la 3éme ligne de m0:
+
+```{r}
+m0[3, ]
+```
+
+Nous pouvons cibler la 4éme colonne de m0:
+
+```{r}
+m0[, 4]
+```
+
+Nous pouvons cibler l'élément à l'intersection entre la ligne 5 et la colonne 5:
+
+```{r}
+m0[5, 5]
+```
+
+Nous pouvons cibler la matrice allant de la ligne 3 à 4 et de la colonne 5 à 8:
+
+```{r}
+m0[3:4, 5:8]
+```
+
+Nous pouvons cibler le vecteur des lignes 1, 5 et 8 et de la colonne 4:
+
+```{r}
+m0[c(1, 5, 8), 4]
+```
+
+### Autres fonctions
+
+Bref toutes les combinaisons sont possibles. En plus de cela, les matrices ont d'autres fonctions plus particulières:
+
+```{r}
+# Création de la matrice
+m0 <- matrix(rep(1, time = 9), 3, 3)
+
+# Indique le nombre de ligne
+nrow(m0)
+# Indique le nombre de colonne
+ncol(m0)
+# Indique les dimensions de la matrices (ligne et colonne)
+dim(m0)
+# Additionne les lignes de la matrice
+rowSums(m0)
+# Additionne les colonnes de la matrice
+colSums(m0)
+# Calcule la moyenne des lignes de la matrice
+rowMeans(m0)
+# Calcule la moyenne des colonnes de la matrice
+colMeans(m0)
+# Calcule le déterminant de la matrice (la matrice doit être carrée)
+det(m0)
+# Réalise la transposition de la matrice
+aperm(m0)
+# Réalise l'inverse de la matrice
+# solve(mc)
+```
+
+## Systèmea d'équations
+
+Pour la résolution de systèmes d'équations linéaires, nous utiliserons la fonction `solve()`. Pour résoudre un système d'équation linéaire simple, il faut autant d'inconnus (x,y,z, etc.) que d'équation. Si nous relevons que la partie gauche de l'équation contenant toutes nos inconnues, nous obtenons une matrice carrée A de dimension AxA. Cette matrice est multipliée par la matrice X représentant toutes les inconnues de dimension Ax1. Puis en prenant les constantes du côté droit de l'équation, nous obtenons une matrice B de dimension Ax1, en voici un exemple:
+
+$2x + 3y - z = 10$
+
+$-x + 5y + z = 0$
+
+$3x + -y + z = 2$
+
+Nous obtenons alors:
+
+$$
+A=
+\left(\begin{array}{cc} 
+2 & 3 & -1\\
+-1 & 5 & 1\\
+3 & -1 & 1
+\end{array}\right)
+x=
+\left(\begin{array}{cc} 
+x\\
+y\\
+z
+\end{array}\right)
+B=
+\left(\begin{array}{cc} 
+10\\
+0\\
+2
+\end{array}\right)
+$$
+
+Nous obtenons donc l'équation des matrices AX=B. Pour résoudre cette équation, il suffit de diviser les deux côtés de l'équation par A et obtenir ainsi X. Mais puisque qu'il n'existe en principe pas de division dans les matrices, nous multiplions par l'inverse, c'est-à-dire A' ici. Attention, l'ordre à une importance (multiplication par la gauche):
+
+$A * X = B A'A * X = A'B$
+
+$X = A'B$
+
+Pour trouver la réponse à notre système d'équations, nous devons simplement multiplier l'inverse de la matrice A (Matrice des coefficients) par la matrice B (matrice des résultats ou des constantes). Nous allons réaliser ce calcule.
+
+Nous allons dans un premier temps créer nos matrices:
+
+```{r}
+A <- matrix(c(2, -1, 3, 3, 5, -1, -1, 1, 1), 3, 3)
+B <- matrix(c(10, 0, 2), 3, 1)
+```
+
+Puis nous allons utiliser la fonction `sovle()` pour faire l'inverse de la matrice A et multiplier le tout par B (avec le produit matriciel):
+
+```{r}
+solve(A) %*% B
+```
+
+Nous obtenons 2, 1 et -3 (pour x, y et z respectivement) et nous pouvons voir que les réponses sont correctes car en remplaçant chaque élément par sa valeur dans le système d'équations suivant:
+
+$2x + 3y - z = 10$
+
+$-x + 5y + z = 0$
+
+$3x + -y + z = 2$
+
+Nous obtenons:
+
+$2(2) + 3(1) - (-3) =$ $4 + 3 + 3 =10$
+
+$10 -(2) + 5(1) + (-3) =$ $-2 + 5 - 3 = 0$
+
+$3(2) + -(1) + (-3) =$ $6 - 1 - 3 = 2$
+
+Ce qui correspond bien aux résultats attendus. Dans ce tuto nous nous arrêtons aux simples systèmes d'équations, mais dans un tuto avenir nous nous intéresserons à l'optimisation et aux différents packages pouvant nous aider à cette fin (nous verrons prochainement ce qu'est un "package" et une "library").
+
+Ce tuto est terminé.

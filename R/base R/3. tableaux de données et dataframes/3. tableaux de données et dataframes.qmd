@@ -1,0 +1,322 @@
+---
+title: "Base 3: Tableau de données (data frame)"
+author: Vestin Cyuzuzo Hategekimana
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+N'oubliez pas de nettoyer votre "Global Environnment" avec les fonctions `rm(list=ls())`, pour éviter d'être encombré de variable. N'hésitez surtout pas à les supprimer si ce sont des exemples donnés dans les tutos, vous pouvez les recréer facilement. R-Studio n'est pas une cave, un peu d'ordre, ça aide en statistique.
+
+Dans ce tuto la partie "Sélection dans le tableau de données" fournit les éléments de base pour ce genre de sélection, mais il existe un package (dyplr de tidyverse) qui réalise mieux le travail. Si le tuto est déjà disponible, n'hésitez pas à le regarder pour remplacer la partie de ce tuto.
+
+## Tableau de données
+
+Dans le présent tuto, nous allons aborder ce que sont les structures de données et comment faire nos premières analyses statistiques de nos données. Nous avions vu dans les précédents tutos comment créer des variables, des vecteurs et des matrices. Nous pouvons remarquer dans la fenêtre en haut à droite que lorsque nous créons une matrice, elle n'apparait pas sous la même catégorie que les variables ou vecteurs. En voici un exemple:
+
+```{r}
+a <- 2
+b <- c(1:4)
+c <- matrix(b, 2, 2)
+```
+
+Ici, "c" apparait sous "Data", alors que "a" et "b" apparaissent sous "Values". Ici les matrices sont placées au même niveau que les structures de données ou tableau de données statistiques. L'outil que nous utilisons en statistique est le tableau de donnée qui présente les caractéristiques suivantes:
+
+1.  Les colonnes représentent les variables observées (âge, salaire, sexe, etc.)
+2.  Les lignes représentent les entités observées (personnes, pays, etc.)
+3.  L'intersection des lignes et des colonnes représente les valeurs d'une entité (sexe de l'individu 10, PIB de l’Autriche, note d'art d'un élève, etc.)
+
+Un tableau statistique ressemble à ça par exemple:
+
+| ID     | Âge | Sexe   | Allemand | Maths | Histoire |     |
+|--------|-----|--------|----------|-------|----------|-----|
+| Ada    | 16  | Fille  | 4.5      | 5.5   | 4.0      |     |
+| Mike   | 15  | Garçon | 4.0      | 5.0   | 4.0      |     |
+| Jasmin | 17  | Fille  | 5.0      | 6.0   | 4.0      |     |
+| Idriss | 16  | Garçon | 3.5      | 5.0   | 4.5      |     |
+| Samira | 16  | Fille  | 4.0      | 5.0   | 4.0      |     |
+| Grâce  | 15  | Fille  | 4.5      | 4.5   | 3.5      |     |
+| ...    | ... | ...    | ...      | ...   | ...      |     |
+
+Comme expliquer plus haut, les colonnes représente les variables observées (1.). Les variables sont des éléments observés qui varient d'une personne à une autre dans notre exemple, nous avons l'Âge, le sexe et les notes d'allemand, de maths et d'histoire qui sont mesurés. Dans les lignes nous avons les entités. Ici ce sont des individus, Ada, Mike, Jasmin, Idriss, Samira et Grâce et bien d'autres (...). La liste est ici nominative, mais il n'est pas nécessaire d'avoir les noms pour pouvoir faire des statistiques (surtout quand on a plusieurs données). En général, un ID est attribué à chaque personne pour ne pas s'encombrer à avoir des noms, mais juste des identifiants. Tout ce qui se trouve dans la même ligne que l'un des personnages est un ensemble de caractéristiques qui lui sont propres en fonction des variables.
+
+Par exemple sous la variable Âge (colonne) nous avons l'Âge de tous les participants à l'étude. Dans la ligne Samira, nous avons son Âge (16 ans), son sexe (fille), ses notes, note en Allemand (4.0), en maths (5.0) et en histoire (4.0). Notons que nous pourrions avoir à la place des élèves des entreprises, des pays, des chômeurs ou des conducteurs (etc.), mais le principe reste le même. Il peut y avoir quelques variantes de tableau statistique (séries temporelles, panel data), mais l'immense majorité des tableaux ressemblent à ça.
+
+Dans la grande majorité des cas, vos tableaux statistiques ne viendront pas de R mais de l'extérieur. Soit, vous les aurez créés depuis un tableur, un bloc-notes ou tout autre logiciel, soit vous l'aurez téléchargé d'un site internet, soit vous l'aurez obtenu d'une institution. Les rares cas où vous créer vos propres données seront surtout lors de simulations, vous n'aurez donc pas à rentrer chaque donnée une par une.
+
+## Création du tableau de données
+
+Dans R, nous pouvons, soit créer notre tableau statistique à partir de vecteurs soit à partir de matrice ou tableau de donnée. Cela se fait avec les fonctions `data.frame()`.
+
+La méthode recommandée est de créer des vecteurs puis de les réunir dans le tableau statistique. Nous allons créer le tableau donné en exemple plus haut:
+
+Dans un premier temps nous créons les vecteurs qui seront les variables (colonnes) de notre tableau statistique:
+
+```{r}
+ID <- c("Ada", "Mike", "Jasmin", "Idriss", "Samira", "Grâce")
+Age <- c(16, 15, 17, 16, 16, 15)
+Sexe <- c("Fille", "Garçon", "Fille", "Garçon", "Fille", "Fille")
+Allemand <- c(4.5, 4, 5, 3.5, 4, 4.5)
+Maths <- c(5.5, 5, 6, 5, 5, 4.5)
+Histoire <- c(4, 4, 4, 4.5, 4, 3.5)
+
+# Puis nous créons le tableau de données "data":
+data <- data.frame(ID, Age, Sexe, Allemand, Maths, Histoire)
+
+# Finalement nous supprimons les variables intermédaires
+rm(ID, Age, Sexe, Allemand, Maths, Histoire)
+```
+
+Remarque: nous avons créé la variable ID, mais comme il a été déjà dit précédemment ce n'est pas nécessaire. Nous l'avons ajouté pour parler de la suppression de variable. Notez bien que tous les vecteurs doivent avoir la même longueur.
+
+Si nous observons la fenêtre en haut à droite de Rstudio, nous voyons que notre tableau de données (data frame) est apparu sous la catégorie data. La différence avec une matrice, c'est qu'une petite flèche apparait à côté de son nom. En cliquant dessus, nous déroulons le contenu de ce tableau et nous pouvons voir le nom des variables (ID, Âge, etc.), leur type (chr, num, etc.) et les premières valeurs de chaque variable. Nous pouvons aussi créer un tableau de donnée à partir d'une matrice:
+
+```{r}
+m0 <- matrix(c(1:15, "a"), 4, 4)
+d0 <- data.frame(m0)
+```
+
+Mais il est recommandé d'utiliser la première méthode pour 3 raisons:
+
+1.  Le nom des vecteurs devient le nom des variables, alors que dans la 2éme méthode elles sont nommées X1,X2,...,Xi
+
+2.  Le type de chaque variable est correctement spécifié (chr, num, etc.). Alors que pour la 2éme méthode, il est difficile de mélanger les types. De plus, lorsqu'il y a un "character" cela transforme toute la matrice en chaine de caractères.
+
+3.  C'est plus ordonné et contrôlé (grands avantages pour les simulations).
+
+## Affichage du tableau de données
+
+Vous pouvez voir votre tableau en écrivant le nom de l'objet:
+
+```{r}
+data
+```
+
+Vous pouvez aussi faire apparaitre que les premières lignes `head(data)` ou les dernières lignes `tail(data)`:
+
+```{r}
+head(data)
+tail(data)
+```
+
+Pour bien voir notre tableau statistique, nous pouvons utiliser la fonction `View()` \[avec un V majuscule!\]. Lorsque vous lancez cette fonction, un nouvel onglet va s'ouvrir juste ici, dans la fenêtre de script. Pas de panique, l'onglet du tuto sera toujours actif, et vous pourrez toujours y avoir accès. Une fois que vous aurez lancé le code, vous pouvez naviguer entre ce script et le tableau dans ce qui suit et vous pourrez le fermer sans problème puisque vous savez comment le faire apparaître:
+
+```{r eval=FALSE}
+View(data)
+```
+
+Les données sont bien en place. Dans la fenêtre du tableau, vous pouvez trier vos données par taille, nom ou faire directement des recherches. Vous pouvez également afficher le tableau dans une fenêtre à part.
+
+Si vous écrivez data, votre tableau statistique va apparaitre dans la console avec les premières lignes. Vous ne pourrez pas faire d'exploration ou de manipulation avec, mais vous pouvez rapidement voir la tête de votre tableau.
+
+## Sélection dans le tableau de données
+
+*Cette partie n'est pas vraiment importante puisqu'il existe un package qui réalise mieux le travail (dyplr de tidyverse), mais elle permet de comprendre comment fonctionne la sélection dans R*
+
+Pour afficher l'une des variables de votre tableau, vous avez 2 méthodes. Soit, vous les appelez par leur numéro de colonne comme dans les matrices:
+
+```{r}
+data[3]
+data[c(2, 4)]
+```
+
+Soit, vous pouvez les appeler par leur nom. Dans ce cas, il vous faut spécifier à chaque fois le nom du tableau de donnée suivi du signe (\$):
+
+```{r}
+data$Maths
+data$ID
+```
+
+Si vous comptez travailler longtemps avec le même tableau de données, vous pouvez le fixer (et en fixer plusieurs en même temps), pour éviter d'avoir à appeler en permanence le nom du tableau de données. Il faut utiliser la fonction `attach()`:
+
+D'abord nous faisons un petit nettoyage, pour supprimer les vecteurs:
+
+```{r}
+attach(data)
+Sexe
+Age
+```
+
+Remarque: Lorsque plusieurs tableaux de données ont une variable de même nom, c'est la plus ancienne qui est conservée et les autres ne sont pas "attach". Les vecteurs pouvant être appelés sans spécifier leur tableau de données (puisqu'ils n’en ont pas), il est important de pouvoir s'en débarrasser avant. Voilà pourquoi nous avons fait du nettoyage avant de lancer la fonction `attach()`.
+
+Pour détacher un tableau de données, vous pouvez utiliser la fonction detach:
+
+```{r}
+detach(data)
+```
+
+Évitez d'utiliser attach, ce n'est pas une bonne pratique.
+
+## Méthode de sélection classique
+
+Personnellement, je ne recommande pas d'utiliser les fonctions `attach()` et `detach()` puisqu'en général (et surtout dans des niveaux plus avancés) on travaille rarement avec un seul tableau de données à la fois. Dans la suite de ce tutoriel, nous allons utiliser la méthode normale. Mais avant ça, voici quelques éléments pour vous y retrouver en ce qui concerne la sélection de variables.
+
+Premièrement, nous pouvons appliquer les mêmes méthodes de sélections que les matrices (plus d'information sur le tutoriel des matrices). Voici quelques exemples avec des spécificités des data frames:
+
+```{r}
+data[1:3, 2:4]
+data[, c("Age", "Allemand")]
+# Lorsque nous utilisons cette méthode, nous sortons un vecteur
+data$Histoire
+# Encore plus complexe
+data[data$Maths >= 5.5, c("ID", "Age")]
+```
+
+Dans tous les cas vous pouvez utiliser les "\[\]" et la fonction `c()` pour sélectionner plusieurs variables en même temps:
+
+```{r}
+data[c("ID", "Maths", "Histoire")]
+```
+
+Pour ajouter une nouvelle variable au tableau, nous pouvons utiliser les vecteurs. Imaginons que nous créons une variable représentant les notes obtenues en économie:
+
+```{r}
+Economie <- c(5, 5, 5, 4, 5, 5)
+data$Economie <- Economie
+```
+
+Même si la variable Économie n'existe pas, nous pouvons créer une nouvelle valeur de cette manière. Nous pouvons aussi supprimer les variables en utilisant la valeur NULL:
+
+```{r}
+data$Economie <- NULL
+```
+
+Nous pouvons également créer un nouveau tableau en extrayant les variables qui nous intéressent. Nous pouvons, soit utiliser la fonction `subset()`, soit la fonction data.frame. à partir de là, il y a 2 cas:
+
+Soit, nous souhaitons extraire plusieurs variables et n'en garder que peu. Par exemple, nous ne sommes intéressés que par l'Âge et les notes en maths:
+
+```{r}
+d0 <- subset(data, select = c(2, 5))
+# ou
+d0 <- subset(data, select = c("Age", "Maths"))
+# ou
+d1 <- data.frame(data$Age, data$Maths)
+d0
+d1
+```
+
+Soit, nous souhaitons extraire peu de variables et en garder beaucoup. Par exemple nous voulons nous débarrasser de l'ID et des notes d'économie:
+
+```{r}
+d3 <- subset(data, select = -c(1, 6))
+# ou
+d4 <- data[-c(1, 6)]
+d3
+d4
+```
+
+*Remarque: pour le deuxième cas, nous n'allons pas nous amuser à lister toutes les Variables que nous voulons conserver, parce qu'il existe des tableaux de données avec plus d'une centaine de variables et ce serait laborieux.*
+
+Avec la fonction `subset()` nous pouvons aussi filtrer les lignes, mais ne fonctionner qu'avec des valeurs logiques dans la sélection des lignes:
+
+```{r}
+subset(data, Sexe == "Fille", select = c("ID"))
+```
+
+Il est aussi possible pour chaque variable de ne prendre qu'une partie des données disponibles grâce aux opérateurs logiques. Par exemple:
+
+```{r}
+# Nous n'affichons que les filles
+data$Sexe[data$Sexe == "Fille"]
+# Que les Âges de 16 ans et plus
+data$Age[data$Age >= 16]
+```
+
+Pour l'instant, il n'y a rien de très impressionnant. Ce qui est utile, c'est de pouvoir qui croise les données:
+
+```{r}
+# Afficher le nom de toutes les personnes de 16 ans
+data$ID[data$Age == 16]
+# Afficher le sexe de ceux qui ont 5 ou plus en maths
+data$Sexe[data$Maths >= 5]
+# On peut croiser plusieurs opérations logiques
+data$Histoire[data$Sexe == "Garçon" & data$Histoire > 3.5]
+```
+
+Nous pouvons augmenter le nombre de variables que nous souhaitons observer en utilisant la base de données plutôt que de nous focaliser sur une variable: afficher le nom, le sexe et l'Âge des personnes ayant obtenu 4 en histoire:
+
+```{r}
+data[data$Histoire == 4, c("ID", "Sexe", "Age")]
+```
+
+Il faut savoir que nous produisons des valeurs et qu'à ces valeurs peuvent être appliquées des fonctions, de plus ces valeurs peuvent être stockées dans des objets. Nous verrons tout ça au prochain tuto.
+
+## Sauvegarder les tableaux de données
+
+Nous allons finalement voir comment enregistrer votre tableau de données et comment en ouvrir d'autres.
+
+Pour enregistrer votre tableau de données en tableau R (ouvrable par R), il faut utiliser la fonction `save()` en spécifiant le tableau de donnée et le nom qu'on souhaite lui donnée suivit de l'extension ".Rda" entre guillemets:
+
+```{r}
+save(data, file = "data.Rda")
+```
+
+*Remarque: le fichier est enregistré dans votre "working directory" qui est l'emplacement de base de votre "projet". Tous les fichiers sont automatiquement enregistrés là si vous ne précisez pas de destination. Mais vous pouvez les ouvrir de la même manière sans préciser le chemin. Pour préciser le chemin, il suffit d'écrire la même fonction avec le chemin save(data,file="chemin/data.Rda").*
+
+Le fichier est ainsi enregistré dans votre "Working Directory" et vous pouvez le réouvrir soit en cliquant dessus dans l'onglet "Files" de la fenêtre en bas à droite, soit en dehors de R en retrouvant le fichier et en double cliquant dessus, soit avec le code:
+
+```{r}
+load("data.Rda")
+```
+
+Pour l'enregistrer en format exportable (format universellement ouvrable par les logiciels de statistique), il faut noter:
+
+```{r}
+write.table(data, "data.csv")
+```
+
+Pour le faire dans d'autres formats il faut dans un premier temps télécharger le package avec la fonction `install.packages()`, puis le charger avec la fonction `library()` avant de lancer le code. Voilà ce que ça donne pour:
+
+Les fichiers SPSS:
+
+```{r}
+# install.packages("haven")
+library(haven)
+write_sav(data, path = "data.sps")
+```
+
+Les fichiers SAS:
+
+```{r}
+# install.packages("haven")
+library(haven)
+write_sas(data, path = "data.sas")
+```
+
+Les fichiers Stata:
+
+```{r eval=FALSE}
+# install.packages("haven")
+library(haven)
+write_dta(data, "data.dta")
+```
+
+**Remarque: Vous n’avez besoin d’installer les packages qu’une seule fois. Par contre si vous voulez les utiliser vous devrez les charger à chaque fois que vous en aurez besoin. Donc vous n’utiliserez la fonction `install.packages()` qu’une seule fois par élément et `library()` à chaque fois que vous voudrez l'utiliser.**
+
+Pour obtenir le code pour créer cette base de données, nous pouvons utiliser la fonction `dput()`:
+
+```{r}
+dput(data)
+```
+
+Ainsi vous pouvez partager le code pour créer les variables en question sur R. Pour importer des tableaux de données externes, il vous suffit d'utiliser la manœuvre manuelle (c'est vraiment le plus facile) pour soit aller dans la barre de menu tout en haut sous "Files", puis "Import Dataset". Soit aller dans la fenêtre en haut à droite et appuyer sur "Import Dataset". Vous pouvez normalement importer des données des fichiers textes (.txt), d'Excel(.xls/.xlsx), de SPSS(.sav), de SAS(.sas7bdat) et de Stata(.dta). Pour certaines de ces données, R devra installer les packages nécessaires, il vous suffit juste de suivre les instructions.
+
+## Tableau de données de base de R
+
+R dispose à son installation de plusieurs jeux de données disponibles pour pouvoir vous entraîner. Pour pouvoir voir les données disponibles, il vous suffit d'inscrire la commande data:
+
+```{r}
+data()
+```
+
+Une nouvelle page s'ouvre avec tous les jeux de données disponibles. Il y en a plusieurs. Nous allons charger les données sur le taux de crimes violents aux États-Unis et en voir le début du contenu:
+
+```{r}
+data("USArrests")
+head(USArrests)
+```
+
+Nous pouvons voir que l'ID représente les villes du pays, et que les variables disponibles sont Murder, Assault, UrbanPop et Rape.
+
+Ce tuto est terminé.

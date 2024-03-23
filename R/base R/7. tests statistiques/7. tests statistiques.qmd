@@ -1,0 +1,421 @@
+---
+title: "Base 7: Tests statistiques"
+author: Vestin Cyuzuzo Hategekimana
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Dans ce tuto, nous allons aborder les tests statistiques afin de pouvoir faire nos premières statistiques et tirer de premières conclusions.
+
+Pour avoir des informations sur ce qu'est un test statistique, nous vous recommandons le site et le compte YouTube suivant (qui donne aussi d'autres infos en statistique):
+
+https://lepcam.fr/index.php/les-etapes/test/ 
+ 
+Thierry Ancelle [YouTube] (à de nombreuses vidéos sur les tests statistiques): 
+
+https://www.youtube.com/user/ellecna
+
+*Remarque: Nous vous recommandons de jeter un œil à ces liens si vous n'avez pas de notions en test statistique, car dans ce tuto nous partons du principe que vous savez ce que sont un test statistique, une hypothèse nulle (H0) et une hypothèse alternative (Ha).*
+
+Pour avoir des informations sur les types de tests statistiques faisables, nous vous proposons le site suivant:
+
+https://help.xlstat.com/s/article/guide-de-choix-de-test-statistiqueélanguage=fr
+
+Pour avoir accès à quelques tests statistiques sur R, nous vous recommandons le site suivant (une partie du tuto s'en inspire):
+
+http://r-statistics.co/Statistical-Tests-in-R.html
+
+## Création de la base de donnée ecole**
+
+```{r}
+# Puisque nous générons aléatoirement les données, nous devons fixer les valeurs avec une fonction pour avoir à chaque fois le même résultat:
+set.seed(7)
+# Puis nous créons notre tableau de données
+s <- c("Femme", "Homme")
+sexe <- sample(s, 423, replace = TRUE)
+a <- c(15, 15, 16, 16, 16, 17, 17, 17, 17, 18, 18, 19, 20)
+age <- sample(a, 423, replace = TRUE)
+c <- c("A", "B", "C")
+classe <- sample(c, 423, replace = TRUE)
+rm(s, a, c)
+anglais <- round(rnorm(423, 7, 0.5) + ifelse(sexe == "Femme", 2, 0), 0)
+info <- round(rnorm(423, 5, 3) + ifelse(age >= 19, 2, 0), 0)
+art <- round(rnorm(423, 4, 3) + ifelse(classe == "C", 2, -1), 0)
+histoire <- round(rnorm(423, 6, 2) + ifelse(classe == "B" & sexe == "Homme", 2, 0), 0)
+moyenne <- ((anglais + info + art + histoire) / 4)
+ecole <- data.frame(age, sexe, classe, anglais, info, art, histoire, moyenne)
+rm(age, classe, sexe, anglais, info, art, histoire)
+ecole[ecole$anglais > 10, "anglais"] <- 10
+ecole[ecole$info > 10, "info"] <- 10
+ecole[ecole$art > 10, "art"] <- 10
+ecole[ecole$histoire > 10, "histoire"] <- 10
+ecole[ecole$info < 0, "info"] <- 0
+ecole[ecole$art < 0, "art"] <- 0
+ecole[ecole$histoire < 0, "histoire"] <- 0
+n <- c(1, 2, 3)
+n1 <- c(1, 2, 2, 3, 3, 3)
+ecole$niveau <- sample(n, 423, replace = TRUE)
+ecole[ecole$classe == "C", "niveau"] <- sample(n1, length(ecole$class[ecole$class == "C"]), replace = TRUE)
+ecole$niveau <- ordered(ecole$niveau, levels = c(1, 2, 3), labels = c("Moyen", "Bien", "Excellent"))
+```
+
+Nous allons de nouveau ouvrir notre tableau de données "student". Puis nous allons l'attacher pour simplifier la manipulation de données:
+
+```{r}
+attach(ecole)
+```
+
+Il existe généralement deux types de tests, les paramétriques et les non paramétriques. Le premier type se base sur l'hypothèse d'une distribution particulière des données (ex. normal, poisson, exponentielle). Le deuxième type ne se base pas sur ce genre d'hypothèse.
+
+## Test du CHI2
+
+Nous allons commencer par le test du CHI2 (chi-squared), qui permet de tester l'indépendance entre 2 variables catégorielles (ou plus). Il y a deux manières de le faire: en utilisant la fonction `summary()` sur deux vecteurs ou `chisq.test()` sur un tableau. Dans notre exemple, nous allons tester si nous pouvons soupçonner un lien entre le numéro de la classe et le niveau de l'étudiant:
+
+```{r}
+table(classe, niveau)
+```
+
+En faisant le tableau, nous nous rendons compte que les étudiants en classe A et B ont en tendance à être moyens alors que ceux en classe c ont légèrement tendance à être excellent. Les tendances sont plus visibles lorsque nous observons les proportions:
+
+```{r}
+round(100 * prop.table(table(classe, niveau), 1), 0)
+```
+
+37% des étudiants en classe A et 33% des étudiants en classe B sont moyens alors que respectivement 26% et 35% sont excellents. Et en classe C 16% sont moyens, mais 52% sont excellents. Nous allons donc faire un test d'indépendance pour tester notre hypothèse, c'est-à-dire s'il existe bien un lien entre le niveau et la classe de l'étudiant. Il existe deux moyens qui donnent les mêmes résultats:
+
+```{r}
+# Avec la fonction summary
+summary(table(classe, niveau))
+# Avec la fonction chisq.test
+chisq.test(table(classe, niveau))
+```
+
+Nous pouvons voir de deux manières si les deux variables sont indépendantes.
+
+Premièrement, nous pouvons regarder la p-value. Si ce p-value est inférieur à 0.05, nous pouvons rejeter l'hypothèse nulle affirmant l'indépendance des deux variables. Il est possible que ce ne soit pas clair pour tout le monde, nous allons donc nous servir de nos résultats pour comprendre. Dans notre cas, la p-value est de 1.713e-05 donc 0.00001713, bien inférieur à 0.05. Nous pouvons donc rejeter l'hypothèse nulle qui dit que les variables "classe" et "niveau" sont indépendants et admettre l'hypothèse alternative qui indique que les deux variables ne sont pas indépendantes. Donc, nous pouvons soupçonner un lien entre le numéro de la classe et le niveau de l'étudiant. Si nous avions eu un résultat supérieur ou égal à 0.05, nous aurions conclu que les deux variables sont bien indépendantes. Par exemple, dans notre tableau, il n'y a aucun lien entre le sexe de la personne est son attribution à une classe:
+
+Tableau des variables classe et sexe en pourcentage
+
+```{r}
+## par exemple pour la classe A 47% sont des femmes et 53% sont des hommes
+round(100 * prop.table(table(classe, sexe), 1), 0)
+```
+
+Test du chi2:
+
+```{r}
+summary(table(classe, sexe))
+chisq.test(table(classe, sexe))
+```
+
+*Nous voyons que le p-value est supérieur à 0.05*
+
+La deuxième manière de vérifier est très particulière. Vous pouvez trouver 
+l'information sur le dernier lien. Nous ne la présentons pas. Puisqu'en général la 
+p-value suffi à se faire une idée du test.
+
+*Remarque: Vous pouvez faire le test avec un tableau de contingence à plusieurs entrées (donc plusieurs variables), mais vous aurez toujours une p-value inférieur à 0.05 tant qu'il y a au moins deux des variables qui ne sont pas indépendantes entre-elles, même si pour le reste des relations, il n'y a aucun lien. Pour obtenir 0.05 et plus, il faut vraiment qu'aucune des variables n'ait de relations avec les autres. Il n'est donc pas très utile de faire un tableau de contingence avec plus de 2 variables. Notez au passage qu'il est nécessaire d'avoir tout ce charabia statistique pour montrer de quoi on parle. On teste l'indépendance des variables et non pas leur dépendance. C'est pour ça qu'on parle en termes d'hypothèse nulle (acceptée ou rejetée) et que nous utilisons des euphémismes lorsque nous parlons d'imaginer un lien entre les variables. Nous aurons ce langage tout au long de ce tutoriel pour que vous ayez le bon vocabulaire, mais nous expliquerons de manière simple après le charabia.*
+
+Nous allons continuer en présentant les tests de comparaison de moyenne. Nous allons présenter les méthodes paramétriques (la distribution normale est assumée) test de student et les méthodes non paramétriques, test de Wilcoxon.
+
+## Test de Student
+
+Nous allons maintenant réaliser un test de student. Le but de ce test est de vérifier les valeurs de moyennes sous l'hypothèse que la distribution suit une loi normale. Nous avons deux méthodes envisageables. La méthode sur un échantillon, où le but est de comparer la moyenne d'une variable avec celle d'une valeur "mu" estimée et la méthode sur deux échantillons, où le but est de comparer les moyennes entre les deux échantillons. Au final, l'objectif est le même, vous s'il existe une égalité entre les moyennes (et valeurs estimées). Nous commençons par le test de student sur un échantillon:
+
+Par exemple nous pouvons vérifier la moyenne de la variable "moyenne":
+
+```{r}
+mean(moyenne)
+```
+
+En arrondissant, elle est de 5.86. Avec la fonction `t.test()`, nous allons vérifier si la moyenne peut raisonnablement être de 5.95 suivant la distribution de la variable "moyenne":
+
+```{r}
+t.test(moyenne, mu = 5.86)
+```
+
+Dans notre situation nous obtenons une p-value de 0.9637, donc nous échouons à rejeter l'hypothèse zéro (H0) indiquant qu'il n'y a pas de réelle différence entre la moyenne de la variable "moyenne" et la valeur 5.86, et donc nous n'acceptons pas l'hypothèse alternative indiquant que la moyenne de notre variable est différente de 5.86. Bon... autrement dit, nous pouvons raisonnablement penser que la moyenne de 5.86 n'est pas différente de la moyenne de notre variable (qui est d'environ 5.86 comme nous l'avons vu plus haut). Si la p-value avait été inférieur à 0.05, on aurait rejeté l'hypothèse nulle et admis l'hypothèse alternative impliquant que la moyenne n'est pas égale à 5.95. En voici un exemple avec 8 comme valeur estimée: 
+
+```{r}
+t.test(moyenne, mu = 8)
+```
+
+Remarque: ici la p-value est inférieurs à 2.2e-16 qui est un très petit nombre. Donc la moyenne n'est pas égale à 8. Lorsque vous générez des valeurs aléatoirement, vous pouvez vous servir de ce test pour vérifier si la moyenne correspond à ce que vous cherchiez.
+
+Nous faisons maintenant le test de student pour deux échantillons indépendants, la 
+moyenne d'info et la moyenne d'art. Nous précisons des échantillons indépendants, car les notes malgré le fait qu'elles soient le résultat des mêmes personnes par ligne, ne sont pas faites dans la même matière à moment différencié. Nous n'utilisons donc pas le test de student pour deux échantillons appariés.
+
+Dans un premier temps nous constatons que les moyennes sont bien différentes:
+
+```{r}
+mean(info)
+mean(art)
+```
+
+Puis nous réalisons le test statistique:
+
+```{r}
+t.test(info, art)
+```
+ 
+Nous pouvons voir que la p-value est égale à 1.287e-06 et donc inférieure à 0.05, ce qui nous permet de rejeter l'hypothèse nulle (H0) stipulant que la différence entre les deux moyennes est égale à zéro et accepté l'hypothèse alternative que les deux moyennes ont une différence supérieure à zéro.
+
+Pour réaliser le test de student pour deux échantillons appariés, nous devons avoir des échantillons associés aux mêmes personnes mesurant la même chose. Imaginons que les tests d'info et d'art soient les mêmes, mais réalisé à des temps différents, une fois avant un entrainement scolaire et une autre fois après. Si nous souhaitons 
+mesurer la différence entre ces tests, soit l'effet de l'entrainement sur les notes, nous devons utiliser le test de student pour deux échantillons appariés. Il permet d'associer chaque résultat avec la même personne pour voir la différence moyenne dans tous les résultats. 
+
+```{r}
+t.test(info, art, paired = TRUE)
+```
+
+Nous obtenons une p-value inférieur à 0.05 (1.26e-06), donc la différence entre les deux moyennes est supérieure à zéro et nous pouvons voir tout en bas des résultats après les termes "mean of the différences" la valeur 0.9267139, qui représente la moyenne des différences entre les notes appariées. c'est bien ce que nous obtenons si nous faisons la différence des moyenne "info" et "art":
+
+```{r}
+mean(info) - mean(art)
+```
+
+Il faut faire attention, car ici l'ordre a un sens:
+
+```{r}
+t.test(art, info, paired = TRUE)
+```
+
+Nous obtenons sous "mean of the differences" une différence moyenne de -0.964539 en inversant l'ordre des variables.
+
+Puisque les notes sont reliées aux mêmes personnes, que nous avons des vecteurs (variables) de même longueur, il faut privilégier la méthode appariée. Le cas où la méthode indépendante est à privilégier est lorsque nous comparons les moyennes par séparation par sous-groupe (par exemple entre personnes n'ayant aucun lien). Pour montrer les subtilités d'utilisation, nous allons faire quatre exemples avec la variable "sexe" combinée à d'autres variables (des notes). Dans un premier temps nous pouvons repérer quelles moyennes varient avec le sexe de l'individu. Vous pouvez tester toutes les combinaisons de note pour vous entrainer. Pour gagner du temps, nous prendrons les notes d'anglais et d'info, car elles sont respectivement les notes pour lesquels nous avons la plus grande (~2.04) et la plus petite (~0.46) différence:
+
+```{r}
+mean(anglais[sexe == "Homme"]) - mean(anglais[sexe == "Femme"])
+mean(info[sexe == "Homme"]) - mean(info[sexe == "Femme"])
+```
+
+Nous nous attendons donc à ce que les tests nous indiquent une différence significative entre les sexes pour les notes d'anglais (rejet de l'hypothèse nulle) et n'en trouvent pas pour les notes d'info (non-rejet de l'hypothèse nulle). Nous allons commencer par tester la variable "anglais" avec le test de student sur deux échantillons indépendants, puis apparier et discuter des différences. Ensuite nous ferons la même chose avec la variable "info". Puisque l'une des conditions pour que les tests appariés fonctionnent est les nécessités que les vecteurs (variables) soient de même longueur, nous devons remettre au même niveau le nombre de notes de notre échantillon pour les hommes (223) et pour les femmes (200). Notez que nous faisons ça seulement en guise d'exemple pour l'utilisation du test statistique "t-test paired" :
+
+Nous créons la variable anglais pour les hommes (AH):
+
+```{r}
+AH <- anglais[sexe == "Homme"]
+```
+
+Nous créons la variable anglais pour les femmes (AF):
+
+```{r}
+AF <- c(anglais[sexe == "Femme"], rep(mean(anglais[sexe == "Femme"]), time = 23))
+```
+
+Nous créons la variable info pour les hommes (IH):
+
+```{r}
+IH <- info[sexe == "Homme"]
+```
+
+Nous créons la variable info pour les femmes (IF):
+
+```{r}
+IF <- c(info[sexe == "Femme"], rep(mean(info[sexe == "Femme"]), time = 23))
+```
+
+*Remarque: pour éviter d'altérer les moyennes calculées précédemment nous avons ajouté comme nouvelles valeurs pour toutes les variables des hommes la moyenne de base, nous pouvons contrôler que rien n'a changé:*
+
+```{r}
+mean(AH)
+mean(anglais[sexe == "Homme"])
+mean(IH)
+mean(info[sexe == "Homme"])
+```
+ 
+Nous pouvons donc commencer les tests:
+
+```{r}
+# T test simple
+t.test(AH, AF)
+# T test paired
+t.test(AH, AF, paired = TRUE)
+```
+
+Nous pouvons voir que les résultats sont similaires entre les deux méthodes lorsqu'il y a une vraie différence entre les moyennes (p-value < 2.2e-16). Puis:
+
+```{r}
+t.test(IH, IF)
+t.test(IH, IF, paired = TRUE)
+```
+
+Nous pouvons voir que les résultats sont similaires entre les deux méthodes lorsqu'il n'y a pas de vraie différence entre les moyennes (p-value = 0.0729 ou 0.08335).
+
+Le test de student est paramétrique, c'est-à-dire que nous assumons le fait que les distributions de nos échantillons sont normales. Pourtant ce n'est pas le cas des variables suivantes:
+
+```{r}
+hist(AH)
+hist(AF)
+```
+
+Nous pouvons observer les densités des variables:
+
+```{r}
+plot(density(AH))
+plot(density(AF))
+```
+
+Que ce soit avec l'histogramme ou la répartition de densité, nous voyons que nos variables ne sont pas normalement distribuées. Nous sommes bien embêtés, car nous violons l'hypothèse de base et cela rend nos résultats discutables. Nous allons donc utiliser la méthode Wilcoxon pour obtenir des résultats plus probants, car c'est un test non paramétrique. Elle s'utilise de la même manière que `t.test()`, sauf que nous utilisons la fonction `wilcox.test()`.
+
+Nous faisons un premier test pour contrôler si la moyenne de la variable des tests d'anglais pour les hommes est égale à 6.96:
+
+```{r}
+wilcox.test(AH, mu = 6.96)
+```
+
+Puis nous faisons le même test pour comparer les notes d'anglais des hommes et des femmes:
+
+```{r}
+wilcox.test(AH, AF)
+```
+
+Nous pouvons rejeter l'hypothèse nulle dans les deux cas, puisque les p-values sont inférieurs à 0.05, donc nous pouvons accepter les hypothèses alternatives, c'est-à-dire que la moyenne de AH n'est pas égale à 6.96 dans le premier cas et que AH et AF n'ont pas la même moyenne.
+
+Bon, vous commencez à comprendre. Dans la suite de ce tuto, nous ferons une présentation plus sommaire des prochains tests statistiques. Mais avant cela, nous résumons les tests que nous avons déjà vus:
+
+## Tests en vrac
+
+### TEST DU KHI-2
+
+Teste si deux ou plusieurs variables catégorielles sont indépendantes.
+
+H0: Les variables sont indépendantes
+
+Ha: Les variables ne sont pas indépendantes
+
+Exemple:
+
+```{r}
+summary(table(classe, niveau))
+chisq.test(table(classe, niveau))
+```
+
+*La p-value est inférieur à 0.05, les deux variables ne sont pas indépendantes.*
+
+### TEST EXACT DE FISHER
+
+`fisher.test()`
+
+Test l'indépendance de deux variables catégorielles, souvent utiliser pour des petits échantillons.
+
+H0: Les variables sont indépendantes
+
+Ha: Les variables ne sont pas indépendantes
+
+Exemple:
+
+```{r}
+fisher.test(table(classe, sexe))
+```
+
+*Le p-value est supérieur à 0.05, les variables sont indépendantes*
+
+### TEST DE FISHER
+
+`var.test()`
+
+Permets de vérifier si deux échantillons ont la même variance.
+
+H0: Les deux échantillons ont la même variance
+
+H1: Les deux échantillons n'ont pas la même variance
+
+Exemple:
+
+```{r}
+var.test(age, anglais)
+```
+
+*Avec une p-value inférieur à 0.05, nous pouvons rejeter l'hypothèse zéro et affirmer que les deux échantillons n'ont pas la même variance.*
+
+### TEST T (de student encore)
+
+Teste l'égalité de la moyenne d'une variable à une valeur fixée ou à une autre variable.
+
+H0: Les moyennes sont similaires
+
+Ha: Les moyennes ne sont pas similaires
+
+Exemple:
+
+```{r}
+t.test(info, art)
+```
+
+*La p-value est inférieur à 0.05, donc les moyennes ne sont pas similaires.* 
+
+### TEST DE WILCOX (encore)
+
+Test l'égalité de la moyenne d'une variable à une valeur fixée ou à une autre variable é la différence du test t, ce test ne part pas du principe que l'échantillon est normalement distribué.
+
+H0: Les moyennes sont similaires
+
+Ha: Les moyennes ne sont pas similaires
+
+Exemple:
+
+```{r}
+wilcox.test(anglais, histoire)
+```
+
+*Nous rejetons l'hypothèse zéro et acceptons l'hypothèse alternative figurée dans le résultat de R.*
+
+### TEST DE SHAPIRO
+
+`shapiro.test()`
+
+Permets de voir si la distribution d'un échantillon suit une loi normale.
+
+H0: L'échantillon a une distribution normale
+
+Ha: L'échantillon n'a pas une distribution normale
+
+Exemple:
+
+```{r}
+shapiro.test(info)
+```
+
+*La p-value est inférieure à 0.05, donc l'échantillon ne suit pas une loi normale.* 
+
+### TEST DE KOLMOGOROV ET SMIRNOV
+
+`ks.test()`
+
+Teste si deux échantillons ont la même distribution.
+
+H0: Les deux échantillons ont la même distribution.
+
+Ha: Les deux échantillons n'ont pas la même distribution.
+
+Exemple:
+
+```{r}
+ks.test(histoire, moyenne)
+```
+
+*Le p-value est inférieure à 0.05, donc les deux échantillons n'ont pas la même distribution.*
+
+### CORRÉLATION
+
+`cor.test()`
+
+Test la relation linéaire entre deux variables métriques continues.
+
+H0: Les variables sont linéairement indépendantes
+
+Ha: Les variables ne sont pas linéairement indépendantes
+
+Exemple:
+
+```{r}
+cor.test(histoire, moyenne)
+```
+
+*La p-value est inférieur à 0.05, nous pouvons donc rejeter l'hypothèse nulle et dire que les variables ne sont pas linéairement indépendantes.*
+
+Nous avons exploré dans ce tuto les tests statistiques classiques. Mais il en existe plein d'autres. Nous vous invitons à explorer d'autres packages si vous le souhaitez. 
+
+Ce tuto est terminé. 

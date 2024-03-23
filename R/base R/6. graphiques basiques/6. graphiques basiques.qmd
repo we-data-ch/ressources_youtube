@@ -1,0 +1,346 @@
+---
+title: "Base 6: Graphiques basiques"
+author: Vestin Cyuzuzo Hategekimana
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Dans ce tutoriel, nous allons nous intéresser aux fonctions de bases pour obtenir nos premières visualisations graphiques de nos données. En effet, il est important d'avoir des représentations graphiques pour illustrer nos statistiques descriptives, car une image vaut mille mots. Permettez-nous d'ajouter quelques mots tout de même. 
+
+Afin d'avoir un suivi correct des résultats, nous allons utiliser le même tableau de données, que nous avons appelé "ecole". Pour le fonctionnement du Markdown nous allons le recréer (ce tableau de données est un peu différent):
+
+```{r}
+# Puisque nous générons aléatoirement les données, nous devons fixer les valeurs avec une fonction pour avoir à chaque fois le même résultat:
+set.seed(7)
+# Puis nous créons notre tableau de données
+s <- c("Femme", "Homme")
+sexe <- sample(s, 423, replace = TRUE)
+a <- c(15, 15, 16, 16, 16, 17, 17, 17, 17, 18, 18, 19, 20)
+age <- sample(a, 423, replace = TRUE)
+c <- c("A", "B", "C")
+classe <- sample(c, 423, replace = TRUE)
+rm(s, a, c)
+anglais <- round(rnorm(423, 7, 0.5) + ifelse(sexe == "Femme", 2, 0), 0)
+info <- round(rnorm(423, 5, 3) + ifelse(age >= 19, 2, 0), 0)
+art <- round(rnorm(423, 4, 3) + ifelse(classe == "C", 2, -1), 0)
+histoire <- round(rnorm(423, 6, 2) + ifelse(classe == "B" & sexe == "Homme", 2, 0), 0)
+moyenne <- ((anglais + info + art + histoire) / 4)
+ecole <- data.frame(age, sexe, classe, anglais, info, art, histoire, moyenne)
+rm(age, classe, sexe, anglais, info, art, histoire)
+ecole[ecole$anglais > 10, "anglais"] <- 10
+ecole[ecole$info > 10, "info"] <- 10
+ecole[ecole$art > 10, "art"] <- 10
+ecole[ecole$histoire > 10, "histoire"] <- 10
+ecole[ecole$info < 0, "info"] <- 0
+ecole[ecole$art < 0, "art"] <- 0
+ecole[ecole$histoire < 0, "histoire"] <- 0
+n <- c(1, 2, 3)
+n1 <- c(1, 2, 2, 3, 3, 3)
+ecole$niveau <- sample(n, 423, replace = TRUE)
+ecole[ecole$classe == "C", "niveau"] <- sample(n1, length(ecole$class[ecole$class == "C"]), replace = TRUE)
+ecole$niveau <- ordered(ecole$niveau, levels = c(1, 2, 3), labels = c("Moyen", "Bien", "Excellent"))
+```
+
+Nous connaissons la routine pour débuter et avoir un aperçu des données:
+
+```{r}
+attach(ecole)
+head(ecole)
+summary(ecole)
+```
+
+**Histogramme**
+
+La première représentation graphique que nous allons utiliser est l'histogramme. Cela permet de voir la distribution de la variable sur toutes ses valeurs. Elle ne s'applique que sur les variables métrique (numériques). Observons par exemple les histoires générales:  hist(histoire)  Nous avons une jolie représentation qui ressemble é une distribution normale (voir sur internet pour plus d'information. Vous pouvez agrandir l'image. Pour voir à quel point l'image colle avec les données, vous pouvez faire un `summary()`:
+
+```{r}
+summary(histoire)
+```
+
+Nous pouvons voir que la médiane correspond bien au point culminant de la distribution (6), de plus, l’histoire est très proche de la médiane, nous pouvons estimer que nous avons une distribution normale.  Nous pouvons décider le nombre de séparation pour notre histogramme et voir comment l'histogramme change, voici quelques exemples:
+
+```{r}
+hist(histoire, breaks = 10)
+hist(histoire, breaks = 3)
+hist(histoire, breaks = 6)
+hist(histoire, breaks = 1)
+```
+
+*Remarque: Plus il y a de break plus il y aura de subdivision dans l'histograme et plus il sera précis, mais en exagérant le nombre de break on peut arriver à l'effet inverse.*
+
+Nous pouvons faire apparaitre la densité à la place de la fréquence sur l'axe des y:
+
+```{r}
+hist(histoire, freq = FALSE)
+```
+
+Pour avoir des information sur l'histogramme il suffit d'ajouter "plot":
+
+```{r}
+hist(histoire, plot = FALSE)
+```
+
+Pour changer de couleur:
+
+```{r}
+hist(histoire, col = "green")
+```
+
+Nous pouvons voir l'histogramme des histoires pour différents groupes:
+
+```{r}
+hist(histoire[ecole$age == 16])
+hist(histoire[ecole$classe == "B"])
+hist(histoire[ecole$niveau == "Excellent"])
+```
+
+Nous pouvons avoir plusieurs graphiques en même temps en utilisant la fonction par:
+
+```{r}
+# Pour avoir deux graphiques superposés:
+par(mfrow = c(2, 1))
+hist(histoire[ecole$sexe == "Femme"])
+hist(histoire[ecole$sexe == "Homme"])
+```
+
+Pour avoir 2 graphiques côte à côte:
+```{r}
+par(mfrow = c(1, 2))
+hist(histoire[ecole$sexe == "Femme"])
+hist(histoire[ecole$sexe == "Homme"])
+```
+
+Pour avoir 4 graphiques en carré:
+```{r}
+par(mfrow = c(2, 2))
+hist(histoire[ecole$sexe == "Femme"])
+hist(histoire[ecole$sexe == "Homme"])
+hist(histoire[ecole$age == 16])
+hist(histoire[ecole$classe == "B"])
+```
+
+Pour avoir 4 graphiques en ligne:
+```{r}
+par(mfrow = c(1, 4))
+hist(histoire[ecole$sexe == "Femme"])
+hist(histoire[ecole$sexe == "Homme"])
+hist(histoire[ecole$age == 16])
+hist(histoire[ecole$classe == "B"])
+```
+
+Pour avoir 4 graphiques en colonne:
+```{r}
+par(mfrow = c(4, 1))
+hist(histoire[ecole$sexe == "Femme"])
+hist(histoire[ecole$sexe == "Homme"])
+hist(histoire[ecole$age == 16])
+hist(histoire[ecole$classe == "B"])
+```
+
+*Remarque: vous avez compris, le premier paramètre de mfrow représente le nombre de ligne, le second paramètre représente le nombre de colonne. Lorsque vous utilisez la fonction `par()`, l'onglet plot se divise comme vous l'avez décidé et le reste. Lorsque vous ajoutez de nouveaux graphiques, ils remplacent les plus anciens. Pour revenir à la normal vous pouvez utiliser ce code:*
+
+```{r}
+par(mfrow = c(1, 1))
+```
+
+**Densité**
+
+À part l'histogramme, il existe un autre moyen de représenter la distribution des données: La densité. Ce type de représentation a l'avantage d'être plus lisse et de reconnaître plus facilement une distribution normale.
+
+Nous pouvons créer une distribution de densité en utilisant les fonctions `density()` et `plot()`:
+
+```{r}
+plot(density(histoire))
+```
+
+Pour les prochaines fonctions, nous vous recommandons de vous entraîner avec la fonction `help()` ou le signe (?) pour chercher des renseignements sur les différents paramètres de la fonction.
+
+**Nuage de points**
+
+Nous pouvons tracer un nuage de points pour voir la relation entre 2 variables métriques. Cette méthode peut être assez pratique pour déceler des relations linéaires ou non linéaires:
+
+```{r}
+plot(info, histoire)
+```
+
+*Remarque: Puisque les différentes valeurs des variables info et histoire sont strictement limitées entre 0 et 10, et qu'il y a un nombre strict et régulier de valeurs entre les deux extrémités, nous avons une impression de points qui sont ordonnés. En réalité, derrière un point peuvent s'en cacher d'autres, mais ils sont parfaitement superposés.*
+
+Il est possible d'y ajouter une droite de régression linéaire (en bleu)
+
+```{r}
+# Réécrir plot n'est pas nécessaire mais nous le faisons pour le markdown
+plot(info, histoire)
+abline(lm(histoire ~ info), col = "blue")
+```
+
+*Remarque: Nous pouvons voir que la ligne est pratiquement horizontale et qu'il n'y a donc pas de corrélation entre les deux variables. Mais on peut le voir aussi à l'espacement entre (dispersions) entre les points qui ne semble pas suivre le chemin d'une droite.*
+
+On peut aussi ajouter une droite de lowess (en rouge) qui fonctionne comme la droite linéaire, mais n'est pas obligé de suivre la courbe d'une droite linéaire affine:
+
+```{r}
+# Réécrir plot n'est pas nécessaire mais nous le faisons pour le markdown
+plot(info, histoire)
+lines(lowess(info, histoire), col = "red")
+```
+
+Nous pouvons utiliser un exemple avec des variables qui ont un lien entre elles telles que moyenne et art pour montrer la différence:
+
+Droite de régression linéaire:
+
+```{r}
+plot(moyenne ~ art)
+abline(lm(moyenne ~ art), col = "blue")
+```
+
+Courbe de lowess:
+
+```{r}
+plot(moyenne ~ art)
+lines(lowess(moyenne, art), col = "red")
+```
+
+
+**Matrice de nuage de point**
+
+Vous pouvez faire apparaître une matrice de nuages de points de plusieurs variables. L'avantage de cette méthode c'est qu'elle permet en un coup d'œil de rassembler plusieurs graphiques de nuages de points, évitant ainsi le besoin de le faire pour chaque pair de variable:
+
+```{r}
+pairs(~ age + anglais + info + art + histoire + histoire)
+```
+
+*Remarque: Nous n'observons de tendance nulle part*
+
+Pour rendre ce graphique intéressant, nous pouvons utiliser la variable "moyenne". La variable moyenne a la particularité d'être la combinaison linéaire des variables anglais, info, art et histoire. Donc nous devrions observer des tendances entre les variables citées et la variable moyenne dans le graphe:
+
+```{r}
+pairs(~ moyenne + anglais + info + art + histoire)
+```
+
+*Remarque: À part pour la variable anglais, nous pouvons effectivement voir une tendance linéaire entre la moyenne et le reste des variables*
+
+**Graphique en barres**
+
+Vous pouvez utiliser des graphiques en bar en utilisant les tableaux. C'est assez pratique pour se représenter visuellement des grandeurs, particulièrement les tailles d'effectif entre des groupes (variables catégorielles/ordinales):
+
+```{r}
+barplot(table(classe))
+# La même chose horizontalement
+barplot(table(classe), horiz = TRUE)
+```
+
+Il est aussi possible de subdiviser des variables catégorielles. Par exemple la classe et le sexe:
+
+```{r}
+barplot(table(sexe, classe))
+```
+
+C'est pas mal, mais ce n'est pas très joli ni très compréhensible. Contrairement aux autres exemples de graphiques que nous avons vus plus haut qui se suffisent à eux-mêmes, il existe des graphiques où il faut gérer les éléments entièrement. Nous pouvons voir que les légendes pour la variable sexe sont absentes dans ce cas-ci par exemple. Nous pouvons les ajouter manuellement avec d'autres éléments. Les éléments que nous allons voir sont aussi applicables à d'autres types de graphique, même aux plus complets vu précédemment. Pour obtenir des informations sur les options d’une fonction nous pouvons utiliser soit le point d'interrogation suivi du nom de la fonction, soit utiliser la fonction help avec la fonction recherchée entre parenthèse et entre guillemets:
+
+```{r}
+?barplot
+help("barplot")
+```
+
+Pour ajouter un titre nous allons utiliser l'option "main=" pour un sous-titre l'option "sub=" et pour ajouter des légendes l'option legend.text= avec la valeur TRUE:
+
+```{r}
+# En couleur
+barplot(table(sexe, classe), main = "Répartition des sexes par classe", sub = "Ceci est un sous titre", legend.text = TRUE)
+```
+
+*Remarque: les options peuvent être mises dans n'importe quel ordre, ça ne changera pas le résultat.*
+
+C'est plutôt pas mal, mais on peut rendre le graphique plus agréable en rajoutant des couleurs. Il en faut une par catégorie et les noms doivent être écrits en anglais:
+
+```{r}
+barplot(table(sexe, classe), main = "Répartition des sexes par classe", sub = "Ceci est un sous titre", legend.text = TRUE, col = c("green", "orange"))
+```
+
+C'est beau. Mais on se rend vite compte que le code devient très long et peut même devenir illisible à force. Heureusement que la page HTML réarrange la longueur en fonction de la forme de la page pour le tuto. Mais lorsqu'on code sur R sans utiliser de Markdonw, on est confronté au problème. Il existe deux méthodes efficaces pour réduire la longueur de la ligne de code. Premièrement, nous pouvons créer des variables de passage juste avant la ligne de code pour extraire les parties les plus longues des options:
+
+```{r}
+titre <- "Répartition des sexes par classe"
+sous_titre <- "Ceci est un sous titre"
+couleur <- c("green", "orange")
+barplot(table(sexe, classe), main = titre, sub = sous_titre, legend.text = TRUE, col = couleur)
+```
+
+La seconde méthode que nous pouvons combiner avec la première consiste en l'ajout de paragraphe en appuyant sur la touche ENTER du clavier pour sauter de ligne. En effet, R arrive à lire la fonction même avec ces espaces, nous obtenons ainsi un code plus lisible:
+
+```{r}
+titre <- "Répartition des sexes par classe"
+sous_titre <- "Ceci est un sous titre"
+couleur <- c("green", "orange")
+barplot(table(sexe, classe),
+  main = titre,
+  sub = sous_titre,
+  legend.text = TRUE,
+  col = couleur
+)
+```
+
+Voilà, nous avons un code plus propre. Naturellement, vous pouvez utiliser cette astuce avec n'importe quelle autre fonction (pas seulement avec les fonctions graphiques).
+
+**Camembert**
+
+Vous pouvez faire apparaitre des graphiques en camemberts pour représenter les proportions des groupes d'une variable catégorielle:
+
+
+```{r}
+pie(table(niveau))
+```
+
+Comme pour les graphiques en barres, nous pouvons ajouter des couleurs que nous décidons à la place des couleurs standard de R. Mais si nous ne souhaitons pas faire un choix de ces couleurs pour des raisons pratiques (par exemple il y a beaucoup de catégories et qu'on ne souhaite pas passez de l'énergie dessus), nous pouvons utiliser la fonction rainbow:
+
+```{r}
+couleur <- rainbow(3)
+pie(table(niveau), col = couleur)
+```
+
+*Remarque: Nous avons indiqué ici le nombre de couleurs que nous souhaitons en indiquant de 3.*
+
+Nous pouvons utiliser cette fonction avec n'importe quel graphique naturellement. Nous pouvons aussi décider de l'opacité (transparence) des couleurs avec l'option alpha:
+
+```{r}
+couleur <- rainbow(3, alpha = 0.4)
+pie(table(niveau), col = couleur)
+```
+
+**Boîte à moustache**
+
+Nous pouvons aussi créer des boîtes à moustaches. Elles sont pratiques parce qu’elles permettent en un coup d'œil d'observer une distribution. Vous pouvez avoir plus d'explications ici:
+
+https://www.stat4decision.com/fr/le-box-plot-ou-la-fameuse-boite-a-moustache/
+
+Ce qu'il faut retenir d'important, c'est que le trait central indique la médiane donc que 50% des valeurs se trouvent en dessous et que 50% des valeurs se trouvent au-dessus et que le grand rectangle indique aussi les 50% des valeurs se trouvant entre le 1er et le 3ème quartile. Puisque les bornes ne représentent pas les valeurs maximum et minimum de nos données, il peut arriver que des valeurs soient en dehors. Lorsque c'est le cas, ils sont représentés par des points, ils peuvent être des valeurs aberrantes s'ils sont trop éloignés du graphique, sinon ils ne le sont pas forcément, mais méritent une attention particulière pour savoir pourquoi elles sont en dehors du graphique.
+
+Nous pouvons le faire pour une variable métrique telle que la moyenne:
+
+```{r}
+boxplot(moyenne)
+# Horizotalement
+boxplot(moyenne, horizontal = TRUE)
+```
+
+Ce qui est intéressant avec les boîtes à moustache, c'est de pouvoir comparer la distribution de plusieurs catégories, en voici quelque exemple:
+
+```{r}
+# Les notes d'art selon la classe
+boxplot(art ~ classe)
+# Les notes d'informatique selon le sexe et la classe
+boxplot(info ~ sexe * classe)
+# Les notes d'histoire selon la classe avec l'option notch
+boxplot(histoire ~ classe, notch = TRUE)
+# les notes d'histoire selin le sexe et le niveau avec l'option notch et les couleurs vert et jaune.
+boxplot(histoire ~ sexe * niveau, notch = TRUE, col = c("green", "yellow"))
+```
+
+Pour plus d'informations, vous pouvez consulter le site suivant:
+
+https://www.statmethods.net/graphs/creating.html
+
+Nous n'avons pas passé beaucoup de temps sur ce tuto, car il existe des packages bien plus joli et performant pour faire des graphiques comme nous l'avions dit plus tôt, ggplot2 (et ploty). Nous avons présenté les graphiques précédents parce qu’ils permettent d'avoir des informations rapides, mais vous préférerez probablement les autres packages pour vos présentations et travaux.
+
+Ce tuto est terminé. 

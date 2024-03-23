@@ -1,0 +1,385 @@
+---
+title: "Base 4: Statistique descriptive (1)"
+author: Vestin Cyuzuzo Hategekimana
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+N'oubliez pas de nettoyer votre "Global Environnment" avec la fonction `rm(list=ls())`, pour éviter d'être encombré de variable. N'hésitez surtout pas à les supprimer si ce sont des exemples donnés dans les tutos, vous pouvez les recréer facilement. R-Studio n'est pas une cave, un peu d'ordre ça aide en statistique.
+
+Il existe des packages qui font un bien meilleur travail tel que dyplr pour la manipulation de tableaux de données et forcats pour la manipulation de données catégorielles.
+ 
+## Références
+
+À votre niveau, vous êtes capable de pouvoir vous débrouiller tout seul et de vous informer tout seul sur le fonctionnement de R. Nous vous proposons ce site pour des tutos claires en français si vous désirez découvrir le logiciel par vous-même:
+
+https://statistique-et-logiciel-r.com/ 
+ 
+Et voici quelques ressources en anglais:
+https://www.datacamp.com/courses/free-introduction-to-r https://www.statmethods.net/r-tutorial/index.html https://www.guru99.com/r-tutorial.html https://www.tutorialspoint.com/r/index.htm
+
+Voici quelques chaînes donnant des tutoriels en français sur YouTube: https://www.youtube.com/channel/UCQW2mMKOwmgfM5XOzPiLnGg https://www.youtube.com/channel/UCww8jYELz4JmlkxT8FvNRAg
+
+Et en anglais:
+https://www.youtube.com/channel/UC79Gv3mYp6zKiSwYemEik9A https://www.youtube.com/channel/UC5ktyacv_aPSBmKB7uX5Piw https://www.youtube.com/channel/UCwuvoN0QKjrXUi48G_Hv7kQ https://www.youtube.com/channel/UCig0KhrB5NClMvX9QrbXcrw https://www.youtube.com/channel/UC8butISFwT-Wl7EV0hUK0BQ
+
+## Création d'un tableau de données
+
+Pour pouvoir faire des statistiques, il nous faut d'abord un tableau de données. Les lignes du code qui suivent vont nous permettent de créer un tableau de concernant les étudiants d'une école fictive contenant 423 étudiants. Les variables qui seront pris en compte seront le sexe, l'âge, le né de classe, les notes en anglais, en art, en info (informatique) et histoire. Chacune des matières sera influencé par un ou plusieurs paramètre personnels (sexe, âge et le né de classe). Pour simplifier les tableaux que nous ferons plus tard les notes seront sur 10. Pour l'instant, vous n'avez pas besoin de comprendre la suite de code, nous nous intéressons ici qu'au résultat du tableau, lancez simplement ce code en entier:
+
+```{r}
+s <- c("Femme", "Homme")
+sexe <- sample(s, 423, replace = TRUE)
+a <- c(15, 15, 16, 16, 16, 17, 17, 17, 17, 18, 18, 19, 20)
+age <- sample(a, 423, replace = TRUE)
+c <- c("A", "B", "C")
+classe <- sample(c, 423, replace = TRUE)
+rm(s, a, c)
+anglais <- round(rnorm(423, 7, 0.5) + ifelse(sexe == "Femme", 2, 0), 0)
+info <- round(rnorm(423, 5, 3) + ifelse(age >= 19, 2, 0), 0)
+art <- round(rnorm(423, 4, 3) + ifelse(classe == "C", 2, -1), 0)
+histoire <- round(rnorm(423, 6, 2) + ifelse(classe == "B" & sexe == "Homme", 2, 0), 0)
+ecole <- data.frame(age, sexe, classe, anglais, info, art, histoire)
+rm(age, classe, sexe, anglais, info, art, histoire)
+ecole[ecole$anglais > 10, "anglais"] <- 10
+ecole[ecole$info > 10, "info"] <- 10
+ecole[ecole$art > 10, "art"] <- 10
+ecole[ecole$histoire > 10, "histoire"] <- 10
+ecole[ecole$info < 0, "info"] <- 0
+ecole[ecole$art < 0, "art"] <- 0
+ecole[ecole$histoire < 0, "histoire"] <- 0
+```
+
+Maintenant voyons de quoi a l'aire notre base de données ecole.
+
+```{r}
+head(ecole)
+str(ecole)
+```
+
+*Remarque: Puisque pour former ce tableau nous avons eu recours à des générations de de nombres aléatoires, nous n'aurons pas exactement les mêmes résultats. Cela a pour conséquences qu'il n'y aura pas d'exemple tirés des résultats (pas de soucis vous ne pouvez pas vous tromper). Par contre, vous aurez des tableaux statistiques différents à chaque fois que vous lancerez ces codes, vous pouvez vous entraîner é tester ce que vous avez appris sur les différents tableaux (remarquez que vous aurez des résultats plutôt similaires par agrégation). Pour cela, à chaque fois que vous générer un nouveau tableau, stockez-le dans un nouvel objet (par exemple e0<-ecole) puis continuer jusqu'au dernier tableau que vous voulez créer.*
+
+Puisque nous allons utiliser des codes pour faire nos statistiques, nous aurons besoin d'un tableau dans une fenêtre à part pour pouvoir avoir les données en permanence disponible. Pour cela nous utilisons la fonction `View()`:
+
+```{r}
+View(ecole)
+```
+
+C'est intéressant, mais nous avons 423 lignes de données pour 7 variables. Nous souhaitons résumer toutes ces informations en de petites informations facilement interprétables. Pour cela, nous allons utiliser la fonction `summary()`:
+
+```{r}
+summary(ecole)
+```
+
+Nous pouvons voir qu'il existe plusieurs types de variables. Le premier type sont les variables métriques (numériques ou quantitatives) tel que l'âge et les notes dans les différentes matières. Dans les variables métriques, nous avons encore 2 catégories: les discrètes qui représentent un nombre réduit de valeur possible, mais des valeur fixe (ex. nombre de pièce dans un appartement) et les continues qui représentent des variables ayant un grand nombre de valeurs possibles (ex. salaire). Pour ces variables R donnes le minimum, le premier quartil, la médiane, la moyenne, le troisième quartil et le maximum. Nous pouvons voir que les jeunes de nos échantillons ont en moyenne 17 ans par exemple. Puis nous observons un second type de variable: Les variables catégorielles (qualitatives). Ce sont des catégories. à l'intérieur de ce type de variable, nous avons encore 2 sous-groupes: les variables nominales qui sont de simple catégorie nominative (ex. sexe de la personne) et les variables ordinales dont les différentes catégories ont une hiérarchie (ex. le niveau de satisfaction pour un produit). Lorsque nous regardons nos variables "sexe" et "classe", nous remarquons qu'ils sont considérés par R comme des chaîne de caractères... Nous ne voulons pas de ça en statistiques, parce que mis à part les tableaux, nous ne pouvons rien faire avec. Nous devons les transformer en facteur pour pouvoir exploiter ces données pleinement. Ici, nous avons délibérément laissé ces variables sous-forme de chaine de caractères car il arrive qu'en important vos bases de données, R importe vos variables catégorielles sous cette forme, de plus pouvons mettre en pratique la transformation en facteur.
+
+## Transformations des données
+
+Pour pouvoir transformer ces chaînes de caractères en facteur, nous devons utiliser l'une des fonctions de la famille de fonction "as":
+
+- `as.factor()`
+- `as.ordered()`
+- `as.numeric()`
+- `as.character()`
+- `as.complex()`
+- `as.data.frame()`
+
+Ces fonctions permettent de traiter les objets considérés (voire les transformer) en un type particulier de données. Lorsque nous voulons transformer nos variables en facteur, nous les transformons en variables catégorielles et c'est comme ça que R les traitera à l'avenir. Pour cela, nous allons stocker la transformation à la place des anciennes valeurs dans le tableau de données avec `as.factor()`:
+
+```{r}
+ecole$sexe <- as.factor(ecole$sexe)
+ecole$classe <- as.factor(ecole$classe)
+```
+
+Nous pouvons contrôler le changement avec la fonction `summary()`:
+
+```{r}
+summary(ecole)
+```
+
+Cette fois-ci R nous indique les différentes catégories de nos variables 
+catégorielles. Ici nous avons des variables nominales, nous présenterons les 
+variables ordinales plus loin dans ce tuto.
+
+## Tableaux
+
+Ce que nous faisons ensuite après avoir résumé nos données, c'est d'utiliser les tableaux pour essayer de remarquer des particularités. Pour nous faciliter la tâche, nous allons utiliser la fonction `attach()` pour fixer notre tableau de données afin d'éviter d'avoir à utiliser l'expression "ecole$" avant chaque variable (ref tuto sur les tableaux de données): 
+
+```{r}
+attach(ecole)
+```
+ 
+*Note: je ne recommande pas cette technique, surtout lorsque vous avez plus d'objets à gérer.*
+
+Pour générer des tableaux, il y a 2 types de fonction: table() et ftable(). Les deux donnent des résultats similaires, mais le ftable est plus compact pour les tableaux avec beaucoup variables. Mais `table()` cela permet de diviser les tableaux. Au final chacun choisit selon ses goûts et selon la situation. Les tableaux sont utiles pour les variables catégorielles:
+
+```{r}
+# Une variable (similaires)
+table(sexe)
+ftable(sexe)
+# Deux variables (similaires)
+table(sexe, classe)
+ftable(sexe, classe)
+# Trois variables (différence)
+table(sexe, classe, age)
+ftable(sexe, classe, age)
+# Et plus encore...
+table(sexe, classe, age, histoire)
+ftable(sexe, classe, age, histoire)
+```
+
+Ce qui se fait souvent dans R c'est de stocker le résultat d'un code dans un objet pour pouvoir l'utiliser dans plusieurs situations. Par exemple, nous 
+nous pouvons le faire avec la fonction `addmargin()` ajoutant les sommes aux 
+extrémités du tableau:
+
+```{r}
+t1 <- table(sexe, classe)
+addmargins(t1)
+```
+
+Il est possible de le faire en un coup: addmargins(table(sexe,classe)) 
+Mais conserver un objet contenant la table est bien plus pratique, puisque nous pouvons l'appeler en permanence pour d'autres fonctions plus rapidement. Nous allons conserver "t1" pour l'instant.
+
+Remarque: Il vaut mieux utiliser `table()` avec `addmargins()`, plutôt que `ftable()`, puisqu’avec le premier on conserve les en-têtes des tableaux.
+
+```{r}
+# Nous pouvons ajouter des proportions au tableau (proportion totale)
+prop.table(t1)
+# Proportion par ligne
+prop.table(t1, 1)
+# Proportion par colonne
+prop.table(t1, 2)
+```
+
+Puisqu'il y a beaucoup de nombres après la virgule, nous pouvons arrondir avec la fonction `round()` à:
+
+```{r}
+# deux nombres après la virgule
+round(prop.table(t1), 2)
+# un nombre après la virgule
+round(prop.table(t1), 1)
+# aucun nombre après la virgule (c'est juste un exemple)
+round(prop.table(t1), 0)
+```
+
+Parfois nous souhaitons un tableau lisible. Nous souhaitons donc utiliser les pourcentages, il nous suffit de multiplier notre expression par 100:
+
+```{r}
+round(100 * prop.table(t1), 2)
+# sans nombre après la virgule
+round(100 * prop.table(t1), 0)
+```
+ 
+Nous pouvons aussi combiner les fonctions addmargins, prop.table et round:
+
+```{r}
+addmargins(round(100 * prop.table(t1), 0))
+```
+
+Ainsi, nous avons les pourcentages pour les lignes, donc la variable sexe (qu’elle est le pourcentage de femme, quel est le pourcentage d'homme), pour les colonnes donc la variable classe (quel est le pourcentage de personne dans chaque classe) et tout en bas à droite, nous avons le total qui représente 100%. Remarque: puisque les valeurs sont générées aléatoirement, nous n'aurons jamais les mêmes résultats ou tableaux. Raison pour laquelle nous ne donnerons pas d'exemple de lecture de tableau (mais la lecture est ici assez simple).
+
+Vous pouvez imaginer simplement ce que vous souhaitez comme combinaison de tableaux. 
+
+## Résumé statistique
+
+Revenons, à notre fonction `summary()`. Elle a l'avantage de combiner les fonctions `quantile()` (mais aussi `min()`, `median()` et `max()`), et `mean().` qui sont de bonnes mesures de position et nous permettent d'avoir un premier avis sur la distribution de notre échantillon. Nous pouvons ajouter à cela les mesures de dispersions que sont la variance `var()` et l'écart-type `sd()`. Avec toutes ces fonctions, nous pouvons faire des analyses plus en profondeur. Nous avions vu qu'il était d'utiliser la fonction `summary()` avec le tableau de données entier. Mais nous pouvons aussi le faire avec les variables individuellement: 
+
+```{r}
+summary(histoire)
+# ou
+summary(art)
+```
+
+Lorsque les variables sont des facteurs, nous obtenons le même résultat qu'en utilisant la fonction `table()`:
+
+```{r}
+summary(sexe)
+table(sexe)
+```
+
+Nous pouvons faire les tests statistiques pour les éléments partiels des variables. Par exemple quelle est la moyenne d'art des 10 premières personnes ou des individus 9, 52, 78, 104, 165, 222, 356 et 420: 
+
+```{r}
+mean(art[1:10])
+mean(art[c(9, 52, 78, 104, 165, 222, 356, 420)])
+```
+
+Remarque: Tout ce qui est valable pour l'une des fonctions statistiques présentées 
+plus tôt, l'est aussi pour le reste des fonctions statistiques.
+
+Nous pouvons aussi voir la moyenne des individus en info lorsque leur note dépasse 5:
+
+```{r}
+mean(info[info > 5])
+```
+
+Mais également leur moyenne lorsqu'ils sont en dessus et en dessous de la moyenne:
+
+```{r}
+mean(info[info > mean(info)])
+mean(info[info < mean(info)])
+```
+
+Nous pouvons aussi voir leur moyenne d'histoire lorsque ce sont des hommes ou des femmes:
+
+```{r}
+mean(histoire[sexe == "Homme"])
+mean(histoire[sexe == "Femme"])
+```
+
+Nous pouvons voir leur moyenne en anglais, lorsque les individus sont à la fois dans la classe C et ont 17 ans:
+
+```{r}
+mean(anglais[classe == "C" & age == 17])
+```
+
+Lorsqu'on commence à utiliser des restrictions aussi précises, il est important de contrôler si la population dont on calcule le paramètre statistique est suffisamment grande avec la fonction length:
+
+```{r}
+length(anglais[classe == "C" & age == 17])
+```
+
+Nous pouvons aussi voir la moyenne en art des personnes se trouvant dans la classe C ou A ayant 18 ans et plus et étant des hommes:
+
+```{r}
+mean(art[classe == "C" | classe == "A" & age >= 18 & sexe == "Homme"])
+```
+ 
+Bref, vous l'aurez compris, vous pouvez essayer toutes les combinaisons que vous souhaitez pour extraire les informations statistiques désirées.
+
+## Valeurs manquantes
+
+Nous allons maintenant voir comment gérer les valeurs manquantes. Nous allons générer une nouvelle variable complètement aléatoire concernant le nombre de cahiers que les individus possèdent (cette information est complètement inutile au cas où vous ne l'auriez pas compris). Nous utiliserons cette variable pour apprendre à gérer les variables manquantes. Dans notre scénario, nous posons la question à nos répondants. Une partie d'entre eux hésite sur le nombre de cahiers en leur possession, une autre le sait parfaitement et une autre pense "Franchement, je me demande à quoi ça sert ce cirque" et c'est justement cette partie qui ne sait pas le nombre de cahiers en leur possession. En générale, lorsque l'information est manquante, la valeur de la variable devient NA. Nous allons générer cette variable et l'ajouter à notre base de données:
+
+```{r}
+c <- c(1:5, 4, 2, 6, 7, NA, NA, NA)
+cahier <- sample(c, 423, replace = TRUE)
+ecole <- data.frame(ecole, cahier)
+rm(c, cahier)
+```
+
+Maintenant que notre tableau de données vient de changer, nous devons le détacher puis le rattacher de nouveau pour mettre à jour les changements (*Rappel, c'est une mauvaise habitude*): 
+
+```{r}
+detach(ecole)
+attach(ecole)
+```
+
+Lorsque vous lancez une fonction statistique, le résultat peut être différent. commençons par exemple par la fonction summary:
+
+```{r}
+summary(ecole)
+summary(cahier)
+```
+
+Dans les deux cas, la fonction nous indique bien ce que nous cherchons et indique en plus le nombre de valeurs manquantes sous "NA's". Dans ce cas si, la fonction fait son travail avec les valeurs disponibles. Mais dans le cas d'autres fonctions telles que `median()`, `var()`, `sd()`, `mean()`, `min()`, `max()` ou `quantile()` renvoi comme résultat "NA". Pour pouvoir afficher le résultat désiré, il faut ajouter "na.rm=TRUE" aux fonctions: 
+
+```{r}
+# Exemple avec mean()
+mean(cahier, na.rm = TRUE)
+```
+
+Remarque: Vous commencez gentiment à comprendre comment fonctionne la structure de R. C'est pourquoi, dans la suite, nous ne décortiquerons pas les fonctions et vous laissons l'exercice de les explorer en vous aidant de la fonction `help()`, de votre bon sens et bien sûre d'internet.
+
+Nous décidons de partir du principe que toutes les personnes qui n'ont pas pu nous donner un nombre de cahiers n'en ont pas, donc zéro (c'est une décision très risquée en réalité, mais nous faisons ça en tant qu'exemple pour introduire le changement de valeur dans les variables). Pour faire cela nous utilise le code suivant: 
+
+```{r}
+cahier[is.na(cahier)] <- 0
+table(ecole$cahier)
+```
+
+*Remarque: Ici nous n'avons pas utilisé la variable cahier du tableau de données ecole pour éviter d'avoir trop de changement.*
+
+Finalement, nous décidons de transformer toutes les valeurs trois de notre tableau en 1 puisque nous nous rendons compte que selon le règlement de l'école d'où est issue notre population, le cahier est obligatoire. Voici le code: 
+
+```{r}
+ecole[ecole$cahier == 3 & !is.na(ecole$cahier), "cahier"] <- 1
+```
+
+*Remarque: Puisque nous avons des valeurs manquantes dans nos données, nous devons les exclure de notre sélection pour que le code fonctionne, sinon vous aurez une erreur avec la fonction `!is.na()`.*
+
+Nous pouvons tout aussi bien exclure les valeurs manquantes de la variable ou de tous les tableaux de données:
+
+```{r}
+cahier.sans.na <- na.omit(cahier)
+data.sans.na <- na.omit(cahier)
+```
+
+Bon, au fond cette variable ne nous sert à rien en dehors des exemples donnés, nous allons donc la supprimer:
+
+```{r}
+ecole$cahier <- NULL
+```
+
+## Variable ordinale
+
+Nous allons maintenant créer une variable ordinale qui place les personnes dans trois niveaux en fonction de leur moyenne générale: "Moyen" s'ils ont moins de 6 de moyenne générale, "Bien" s’ils ont entre 6 et 7 et "Excellent" s’ils ont plus de 7 de moyenne générale (graduation quasi arbitraire). Nous allons dans un premier temps créer la variable "Moyenne" qui fera la moyenne de toutes les branches en utilisant la fonction `rowMeans()` (tuto 3):
+
+```{r}
+moyenne <- rowMeans(ecole[c("anglais", "info", "art", "histoire")])
+ecole <- data.frame(ecole, moyenne)
+rm(moyenne)
+```
+
+Nous avons encore changé le tableau de données, nous devons donc le détacher et l'attacher de nouveau:
+
+```{r}
+detach(ecole)
+attach(ecole)
+```
+
+Maintenant, nous allons nous servir de ces valeurs pour créer notre variable ordinale sur la qualité de la moyenne. Nous pouvons simplement la créer à partir de la variable "moyenne", mais nous allons plutôt transformer cette variable pour nous entrainer à de nouvelles fonctions. Nous allons dans un premier temps renommer la variable "niveau" pour que ça colle avec ses valeurs.
+
+La manière la plus simple c'est de le faire interactivement en utilisant la 
+fonction `fix()`. Une fois le code lancé, vous pouvez manuellement modifier le 
+tableau qui apparait devant vous:
+
+```{r eval=FALSE}
+fix(ecole)
+```
+
+Remarque: écrivez "niveau" strictement comme vous le voyez ici, car R fait prend en considération les castes des lettres. Pour le fonctionnement du Markdown, nous allons quand même créer une colonne niveau manuellement:
+
+```{r}
+# Ajout d'une colonne "niveau" remplie de zéros selon la longueur du tableau (longueur 423)
+ecole$niveau <- rep(0, times = nrow(ecole))
+```
+
+Pour recoder les valeurs de notre nouvelle variable "niveau", nous allons cibler les intervalles de valeurs souhaités et les remplacer par un texte:
+
+```{r}
+ecole$niveau[ecole$niveau < 6] <- 1
+ecole$niveau[ecole$niveau <= 7 & ecole$niveau >= 6] <- 2
+ecole$niveau[ecole$niveau > 7] <- 3
+ecole$niveau <- ordered(ecole$niveau, levels = c(1, 2, 3), labels = c("Moyen", "Bien", "Excellent"))
+```
+ 
+*Remarque: il est important de réaliser les codes dans cet ordre, sinon toutes les valeurs seront cumulées dans "moyen". De plus, il faut toujours spécifier la base de données d'où provient la variable (ici "ecole").*
+
+Voyons ce que ça donne:
+
+```{r}
+head(ecole)
+class(moyenne)
+summary(ecole)
+```
+
+Nous avons donc réussi à créer notre variable ordinale. L'avantage avec cette "class" en "numeric", c'est que R reconnait désormais qu'il existe une hiérarchie fixe entre les différentes valeurs que peut prendre la variable.
+
+Notons que pour tout ce que nous avons montré ici, il existe des bibliothèques de codes (library) téléchargeables qui permettent de simplifier les codes et de faire bien plus. Mais ce sera le sujet d'un futur tuto.
+
+En attendant, vous pouvez tenter d'apprendre seul à utiliser les fonctions de la famille apply sur ces vidéos YouTube: 
+
+https://www.youtube.com/watchév=f0U74ZvLfQo 
+https://www.youtube.com/watchév=ejVWRKidi9M 
+https://www.youtube.com/watchév=HmBPDTtb6Bg
+
+De manière générale, nous vous recommandons cette chaîne YouTube pour quelques fonctions particulières que nous n'aborderons pas dans nos tutos.
+
+Remarque: Dans ces tutos, nous présentons les fonctions de base pour une utilisation simple de R, mais il existe de nombreuses fonctions et de possibilités que nous n'explorons pas ici (car ça ferait trop). Nous vous invitons si vous êtes intéressés à faire vos recherches personnelles à côté pour vous familiariser avec R.
+
+Il y aura probablement un tuto supplémentaire pour l'analyse descriptive.
+
+Ce tuto est terminé.
