@@ -1,0 +1,343 @@
+---
+title: "Fonction tuyau"
+author: "Vestin Hategekimana"
+format: html
+editor: visual
+---
+
+## En bref
+
+Ce qui est à gauche, mets-le à droite!
+
+Raccourci:
+
+- Windows: `Ctrl + Maj + C`
+- Mac: `Cmd + Maj + C`
+
+```{r}
+library(magrittr)
+
+# Base
+sum(1:10)
+
+# Pipe
+1:10 %>% sum()
+```
+
+
+## Introduction à l'opérateur `%>%` en R
+
+### Qu'est-ce que l'opérateur `%>%`?
+
+L'opérateur `%>%`, communément appelé opérateur "pipe" (ou "tuyau" en français), est un outil puissant en R qui permet d'enchaîner plusieurs opérations de manière claire et lisible. Il prend la sortie d'une fonction et la passe comme premier argument à la fonction suivante, rendant votre code plus intuitif et plus facile à suivre.
+
+### Un bref historique
+
+L'opérateur pipe a été introduit par Stefan Milton Bache et Hadley Wickham dans le package `magrittr` en 2014. Il s'est inspiré de concepts similaires en F# et des pipes Unix. **L'objectif était de rendre le code R plus lisible et de réduire le besoin d'appels de fonctions imbriqués ou de variables intermédiaires.**
+
+### Packages utilisant `%>%`
+
+Bien que l'opérateur `%>%` soit originaire du package `magrittr`, il a été largement adopté dans l'écosystème R. Voici quelques packages notables qui utilisent extensivement l'opérateur pipe :
+
+1.  `dplyr` et autres packages `tidyverse`
+2.  `purrr`
+3.  `ggplot2` (en combinaison avec d'autres packages tidyverse)
+4.  `tidymodels`
+5.  `rvest` ou `httr2`
+
+Il cela a poussé à la création d'une pipe native dans R qui s'écrit `|>`.
+
+### Utilisation de base
+
+Commençons par un exemple simple pour illustrer le fonctionnement de l'opérateur pipe :
+
+```{r}
+# Sans l'opérateur pipe (fonctions imbriquées)
+mean(sqrt(abs(log(1:10))))
+
+# Sans l'opérateur pipe (variables intermédiaires)
+a1 <- 1:10 
+a2 <- log(a1)
+a3 <- abs(a2)
+a4 <- sqrt(a3)
+a5 <- mean(a4)
+a5
+
+# Avec l'opérateur pipe
+1:10 %>% log() %>% abs() %>% sqrt() %>% mean()
+```
+
+Dans cet exemple, nous effectuons une série d'opérations sur un vecteur de nombres. La version avec pipe se lit de gauche à droite, facilitant la compréhension de la séquence d'opérations.
+
+### Avantages de l'utilisation de `%>%`
+
+1.  Amélioration de la lisibilité : Le code s'écoule de gauche à droite, reflétant notre façon de penser les opérations séquentielles.
+2.  Réduction du besoin de variables intermédiaires.
+3.  Facilité d'ajout ou de modification des étapes dans la manipulation des données.
+
+### Exemple de manipulation de données
+
+Utilisons un exemple plus pratique avec le package `dplyr` :
+
+```{r}
+library(dplyr)
+
+mtcars %>%
+  filter(cyl == 6) %>%
+  group_by(am) %>%
+  summarize(avg_mpg = mean(mpg)) %>%
+  arrange(desc(avg_mpg))
+```
+
+Ce snippet de code fait ce qui suit : 1. Commence avec le jeu de données `mtcars` 2. Filtre les voitures avec 6 cylindres 3. Groupe les données par type de transmission (am) 4. Calcule la moyenne de MPG pour chaque groupe 5. Arrange les résultats par ordre décroissant de MPG moyen
+
+### Placeholder pour les arguments
+
+**Note: La fonction mets l'élément en première position de l'expression suivante.**
+
+Parfois, vous voudrez peut-être utiliser la valeur transmise dans une position autre que le premier argument. Vous pouvez utiliser le `.` comme placeholder :
+
+```{r}
+iris %>%
+  with(Sepal.Length / Sepal.Width) %>%
+  mean(., trim = 0.1) %>%
+  .[50]
+```
+
+Ici, `.` représente le résultat de l'opération précédente.
+
+## Exemples avancés d'utilisation de `%>%`
+
+### Utilisation avec des instructions conditionnelles´
+
+Rappel des conditionnelles
+
+```{r}
+a <- 5
+
+# Version longue
+if(a > 2) {
+  3
+} else {
+  a
+}
+
+# Vesrion courte
+if(a > 2) 3 else a
+```
+
+L'opérateur `%>%` peut être utilisé avec des instructions conditionnelles, bien que cela nécessite parfois des ajustements syntaxiques :
+
+```{r}
+mtcars %>%
+  {if(nrow(.) > 20) filter(., mpg > 20) else .} %>%
+  summarise(mean_mpg = mean(mpg))
+```
+
+Dans cet exemple, nous utilisons des accolades `{}` pour encapsuler l'instruction conditionnelle. Le `.` fait référence aux données transmises par le pipe.
+
+### Création de fonctions anonymes
+
+Fonction rappel
+
+```{r}
+# Fonction (longue)
+plus1 <- function(a) {
+  a + 1
+}
+
+plus1(1:10)
+
+# Fonction (courte)
+plus2 <- function(a) a + 2
+
+plus2(1:10)
+
+# Fonction anonyme
+sapply(1:10, function(a) a + 3)
+
+```
+
+
+Vous pouvez utiliser `%>%` pour créer des fonctions anonymes :
+
+```{r}
+# Version
+multiply_by_two <- function(a) a * 2
+multiply_by_two(5)
+
+multiply_by_pi <- . %>% {. * pi}
+multiply_by_pi(5)
+```
+
+### Manipulation de chaînes de caractères
+
+```{r}
+library(stringr)
+
+" Hello, World! " %>%
+  str_to_lower() %>%
+  str_replace_all("o", "0") %>%
+  str_trim()
+```
+
+### Utilisation avec ggplot2
+
+```{r}
+library(ggplot2)
+
+mtcars %>%
+  ggplot(aes(x = mpg, y = hp)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+```
+
+### Nested pipelines
+
+Vous pouvez imbriquer des pipelines pour des opérations plus complexes :
+
+```{r}
+mtcars %>%
+  group_by(cyl) %>%
+  summarise(
+    mean_mpg = mean(mpg),
+    sd_mpg = sd(mpg),
+    count = n(),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    cv = sd_mpg / mean_mpg,
+    pct = count / sum(count) * 100
+  )
+```
+
+## L'opérateur natif `|>` en R
+
+R 4.1.0 a introduit l'opérateur pipe natif `|>`. 
+
+Activation: Tools > Global options > Code
+
+Il fonctionne de manière similaire à `%>%`, mais avec quelques différences :
+
+```{r}
+# Utilisation de base de |>
+mtcars |>
+  subset(cyl == 6) |>
+  lm(mpg ~ wt, data = _)
+```
+
+### Pourquoi %>% est plus puissant
+
+Bien que `|>` soit intégré à R et ne nécessite pas de package supplémentaire, `%>%` offre plus de fonctionnalités :
+
+1.  Placeholder explicite : `%>%` permet d'utiliser `.` comme placeholder, tandis que `|>` utilise `_` et de manière plus limitée.
+
+2.  Fonctions anonymes : `%>%` offre une syntaxe plus flexible pour les fonctions anonymes.
+
+```{r}
+# Avec %>%
+1:10 %>% {. * 2}
+
+# Avec |>
+1:10 |> (\(x) x * 2)()
+```
+
+## Pipe family
+
+magrittr: [Lien](https://magrittr.tidyverse.org/index.html)
+
+Évaluation paresseuse : `%>%` permet une évaluation paresseuse avec `%T>%` et `%$%`, ce que `|>` ne fait pas.
+
+```{r}
+# Affichage intermédiaire avec %T>%
+mtcars %>%
+  select(hp, mpg) %T>% 
+  plot() %>%
+  nrow()
+
+# Exposition d'éléments %$% 
+mtcars %$% 
+  plot(hp, mpg)
+```
+
+magrittr offre des opérateurs supplémentaires comme `%<>%` pour l'assignation en place.
+
+```{r}
+# Remplacement classique
+x <- 1:3
+x <- sum(x)
+x
+
+# Remplacement
+x <- 1:3
+x %<>% sum()
+x
+```
+
+## Utilisation de %>% avec des fonctions arithmétiques
+
+Bien que l'opérateur `%>%` soit généralement utilisé avec des fonctions de manipulation de données, il peut aussi être utilisé avec des fonctions arithmétiques. Cependant, cela nécessite quelques ajustements car les fonctions arithmétiques ne sont pas conçues pour prendre leur premier argument comme une entrée de données.
+
+Rappel opérateur infix
+
+```{r}
+# Normale (opérateur)
+1 + 1
+
+# En fonction
+`+`(1, 1)
+```
+
+Voici quelques exemples :
+
+```{r}
+# Utilisation de %>% avec l'addition
+5 %>% {. + 3}
+5 %>% `+`(3)
+
+# Utilisation de %>% avec plusieurs opérations arithmétiques
+# (1)
+10 %>% 
+  {. * 2} %>% 
+  {. - 5} %>% 
+  {. / 3}
+
+# (2)
+10 %>% 
+  `+`(2) %>% 
+  `-`(5) %>% 
+  `/`(3)
+```
+
+Dans ces exemples, nous utilisons des accolades `{}` pour créer une fonction anonyme qui applique l'opération arithmétique à la valeur transmise (représentée par `.`).
+
+## Création d'opérateurs infixes personnalisés
+
+Rappel: opérateur infix
+
+```{r}
+# Base
+1:3 %>% sum()
+
+# Équivalent
+`%>%`(1:3, sum())
+```
+
+En R, vous pouvez créer vos propres opérateurs infixes. Ce sont des fonctions qui s'écrivent entre leurs arguments, comme `%>%` ou `%in%`. Voici comment vous pouvez créer les vôtres :
+
+1.  Le nom d'un opérateur infixe doit commencer et se terminer par `%`.
+2.  Définissez l'opérateur comme une fonction avec deux arguments.
+
+Voici quelques exemples :
+
+### Exemple : Un opérateur d'addition personnalisé
+
+```{r}
+`%plus%` <- function(a, b) a + b
+
+# Exemple 1
+1 %plus% 1
+
+# Exemple 2
+`%plus%`(1, 1)
+```
