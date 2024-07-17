@@ -11,8 +11,8 @@ Ce qui est à gauche, mets-le à droite!
 
 Raccourci:
 
-- Windows: `Ctrl + Maj + C`
-- Mac: `Cmd + Maj + C`
+-   Windows: `Ctrl + Maj + C`
+-   Mac: `Cmd + Maj + C`
 
 ```{r}
 library(magrittr)
@@ -23,7 +23,6 @@ sum(1:10)
 # Pipe
 1:10 %>% sum()
 ```
-
 
 ## Introduction à l'opérateur `%>%` en R
 
@@ -108,7 +107,7 @@ Ici, `.` représente le résultat de l'opération précédente.
 
 ## Exemples avancés d'utilisation de `%>%`
 
-### Utilisation avec des instructions conditionnelles´
+### Utilisation avec des instructions conditionnelles
 
 Rappel des conditionnelles
 
@@ -157,7 +156,6 @@ plus2(1:10)
 sapply(1:10, function(a) a + 3)
 
 ```
-
 
 Vous pouvez utiliser `%>%` pour créer des fonctions anonymes :
 
@@ -213,9 +211,9 @@ mtcars %>%
 
 ## L'opérateur natif `|>` en R
 
-R 4.1.0 a introduit l'opérateur pipe natif `|>`. 
+R 4.1.0 a introduit l'opérateur pipe natif `|>`.
 
-Activation: Tools > Global options > Code
+Activation: Tools \> Global options \> Code
 
 Il fonctionne de manière similaire à `%>%`, mais avec quelques différences :
 
@@ -226,7 +224,7 @@ mtcars |>
   lm(mpg ~ wt, data = _)
 ```
 
-### Pourquoi %>% est plus puissant
+### Pourquoi %\>% est plus puissant
 
 Bien que `|>` soit intégré à R et ne nécessite pas de package supplémentaire, `%>%` offre plus de fonctionnalités :
 
@@ -242,7 +240,9 @@ Bien que `|>` soit intégré à R et ne nécessite pas de package supplémentair
 1:10 |> (\(x) x * 2)()
 ```
 
-## Pipe family
+## Bonus
+
+### magrittr: Pipe family
 
 magrittr: [Lien](https://magrittr.tidyverse.org/index.html)
 
@@ -274,7 +274,7 @@ x %<>% sum()
 x
 ```
 
-## Utilisation de %>% avec des fonctions arithmétiques
+### Utilisation de %\>% avec des fonctions arithmétiques
 
 Bien que l'opérateur `%>%` soit généralement utilisé avec des fonctions de manipulation de données, il peut aussi être utilisé avec des fonctions arithmétiques. Cependant, cela nécessite quelques ajustements car les fonctions arithmétiques ne sont pas conçues pour prendre leur premier argument comme une entrée de données.
 
@@ -311,7 +311,7 @@ Voici quelques exemples :
 
 Dans ces exemples, nous utilisons des accolades `{}` pour créer une fonction anonyme qui applique l'opération arithmétique à la valeur transmise (représentée par `.`).
 
-## Création d'opérateurs infixes personnalisés
+### Création d'opérateurs infixes personnalisés
 
 Rappel: opérateur infix
 
