@@ -1,0 +1,284 @@
+---
+title: "Stringr Package: Essential Functions"
+format: html
+execute:
+  echo: true
+---
+
+## Introduction
+
+Le package stringr fait partie du tidyverse et fournit des outils cohérents et simples pour la manipulation de chaînes de caractères en R.
+
+**Sources:**
+- stringr: https://stringr.tidyverse.org/index.html
+- Cheat sheet: https://github.com/rstudio/cheatsheets/blob/main/strings.pdf
+- Expressions régulières: https://stringr.tidyverse.org/articles/regular-expressions.html
+
+### Charger la librairie
+```{r setup}
+# install.packages("stringer")
+library(stringr)
+# ou
+library(tidyverse)
+```
+
+La majorité des fonctions de stringr n'apportent rien de nouveau par rapport à ce que R sait déjà faire (ex. paste, strsplit, etc.). Par contre elles sont:
+
+- Explicites
+- Généralement plus rapides et constuites autour du package stringi (écrit en C++)
+- Dans la même philosophie: "Les données en premier"
+
+```{r}
+# Données en premier ----
+## Base R
+sub()
+
+## stringr
+str_replace()
+
+# Permet d'enchaîner les opérations ----
+"HELLO!" |>
+    str_to_title() |>
+    str_replace("!", " ") |>
+    str_c("world")
+```
+
+## Opérations de chaînes de caractères de base
+
+### str_length() : Récupérer la longueur d'une chaîne de caractères
+
+```{r}
+# Exemple
+texte <- "Hello, World!"
+
+# Longueur en caractères
+str_length(textes) # str_width() "espace occupé"
+```
+
+## Exemples d'utilisation
+
+### Exemple vectorisé
+
+```{r}
+# Vecteur de textes
+des_textes <- c("premier texte", "deuxième texte")
+
+# Longueur en caractère
+str_length(des_textes)
+```
+
+### Exemple dans dplyr
+
+```{r}
+# library(dplyr)
+
+# Compter la longeur des noms d'espèces
+iris %>%
+    mutate(longueur = str_length(Species))
+
+# Filtrer les espèces avec moins de 5 caractères
+iris %>%
+    filter(str_length(Species) >= 5)
+```
+
+### str_c(): Concatener (joindre) des chaines de caractères
+```{r}
+# Par élément
+str_c("Hello", "World", sep = " ")
+
+# En un seul résultat
+str_c(c("a", "b", "c"), collapse = ", ")
+```
+
+## Opérations simples
+
+### Les castes
+
+```{r}
+vecteur_texte <- c("chat", NA, "  Zoo  ", "ceci est une phrase", "12")
+
+# Tout en Majuscule
+str_to_upper(vecteur_texte)
+
+# Tout en minuscule
+str_to_lower(vecteur_texte)
+
+# Début en majuscule
+str_to_sentence(vecteur_texte)
+
+# Début de chaque mot en majuscule
+str_to_title(vecteur_texte)
+```
+
+### Ordonner les lsites
+
+```{r}
+# Ordonner
+str_sort(vecteur_texte)
+```
+
+### Valeurs uniques
+
+```{r}
+# Unique mais en plus puissant
+str_unique(vecteur_texte)
+```
+
+### Utilitaires
+
+```{r}
+# Na en texte
+str_replace_na(vecteur_texte)
+
+# Si deux textes sont similaires
+str_equal(vecteur_texte)
+
+# Convertir en encoding (bad encoding)
+str_conv(vecteur_texte)
+
+# Nombre de caractère par ligne
+str_wrap(vecteur_texte)
+
+# Retirer les espaces aux extrémités
+str_trim(vecteur_texte)
+
+# Dupliquer un text x fois
+str_dup("chat", 2)
+```
+
+### Voir les caractères spéciaux
+
+```{r}
+contenu <- "
+"
+
+# Voir les caractèrs spéciaux
+str_view()
+```
+
+### str_sub(): Extraire/remplacer des sous-chaines de caractères
+```{r}
+# Extraire une partie
+str_sub(texte, start = 1, end = 5) 
+
+# Extraire deux parties
+str_sub(texte, c(1, 8), c(6, 14))
+
+# Vecteur exemple 1
+str_sub(des_textes, c(1, 2), c(2, 4))
+
+# Vecteur exemple 2
+str_sub_all(des_textes, start = c(1, 2), end = c(2, 4))
+```
+
+### str_glue(): Ajouter/coller des valeurs au texte
+
+```{r}
+# Exemple 1
+nom <- "Idriss"
+age <- 20
+
+str_glue("Il s'appel {nom} et il a {age} ans.") # calcule
+
+# Exemple 2
+str_glue("Elle s'appel {nom} et il a {age} ans.", nom = "Patience", age = 32)
+```
+
+### str_glue_data(): Ajouter/coller des valeurs au texte par dataframe
+
+```{r}
+df <- tibble(nom = c("Cindy", "Amina", "Macha"),
+age = c(50, 25, 18),
+poid = c(65, 70, 60),
+taille c(170, 160, 165))
+
+df %>%
+ str_glue_data("Elle s'appelle {nom}, elle a {age}, elle a un IMC de {poid/(taille^2)}")
+```
+
+## Correspondance de motif (pattern matching): expressions régulières
+
+### str_detect() : Détecter les correspondances de motifs
+```{r}
+# Vecteur de fruits
+fruits <- c("pomme", "banane", "orange")
+
+# Détection
+str_detect(fruits, "an") # Regex 6 caractères / début / fin
+
+# Détection au début
+str_start(fruits, "or")
+
+# Détection à la fin
+str_end(fruits, "ne")
+```
+
+### Compter les motifs
+
+```{r}
+# Compter combien il y a de fois "an"
+str_count(fruits, "an")
+```
+
+### str_extract(): Extraire les correpsondance de motifs (pattern matching)
+```{r}
+# Exemple simple
+str_extract(fruits, "an") # all
+
+# Exemple avancé
+texte <- "Contactez-nous aux adresses suivates: nom@gmail.com ou nom@outlook.com"
+str_extract(texte, "\\w+@\\w+\\.\\w+") # all
+```
+
+### str_subset(): Selectionner l'entièrté à partir d'une partie 
+
+```{r}
+# Exemple simple
+str_subset(fruits, "an")
+
+# Exemple avancé
+texte <- "Contactez-nous aux adresses suivantes: nom@gmail.com ou nom@outlook.com"
+str_subset(texte, "\\w+@\\w+\\.\\w+") # all
+```
+
+### str_replace(): Remplacer les motifs
+```{r}
+texte <- "Hello world"
+str_replace(texte, "world", "WeData")
+```
+
+### str_locate(): Détecter l'emplacement de motifs (début, fin)
+
+```{r}
+str_locate()
+str_locate_all()
+```
+
+```{r}
+str_split(); str_split_1()
+str_flatten(); str_flatten_comma()
+str_glue(); str_glue_data()
+str_which()
+word()
+```
+
+Control matching: https://stringr.tidyverse.org/reference/modifiers.html
+
+## Exemple pratiques
+
+### Example 1: Nettoyer des données textuelles
+```{r}
+texte_sale <- c(" du Text  ", "AUTRE TEXTE", "MéLaNgE")
+
+texte_propre <- texte_sale %>%
+  str_trim() %>%
+  str_to_lower()
+
+texte_propre
+```
+
+### Example 2: Extraire des motifs textuels
+```{r}
+emails <- c("contact@test.com", "pas d'email", "info@example.com")
+str_extract(emails, "\\w+@\\w+\\.\\w+")
+```
