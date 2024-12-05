@@ -15,6 +15,7 @@ Le package stringr fait partie du tidyverse et fournit des outils cohérents et 
 - Expressions régulières: https://stringr.tidyverse.org/articles/regular-expressions.html
 
 ### Charger la librairie
+
 ```{r setup}
 # install.packages("stringer")
 library(stringr)
@@ -22,19 +23,28 @@ library(stringr)
 library(tidyverse)
 ```
 
+### Rapide introduction
+
+```{r}
+# Crash course
+vignette("stringr")
+```
+
 La majorité des fonctions de stringr n'apportent rien de nouveau par rapport à ce que R sait déjà faire (ex. paste, strsplit, etc.). Par contre elles sont:
 
-- Explicites
+- Explicites (str_* vs rep, grep, sub, strsplit, etc.)
 - Généralement plus rapides et constuites autour du package stringi (écrit en C++)
 - Dans la même philosophie: "Les données en premier"
 
 ```{r}
+salut <- "Salut à toi!"
+
 # Données en premier ----
 ## Base R
-sub()
+sub("toi", "WeData", salut)
 
 ## stringr
-str_replace()
+str_replace(salut, "toi", "WeData")
 
 # Permet d'enchaîner les opérations ----
 "HELLO!" |>
@@ -52,7 +62,7 @@ str_replace()
 texte <- "Hello, World!"
 
 # Longueur en caractères
-str_length(textes) # str_width() "espace occupé"
+str_length(texte) # str_width() "espace occupé"
 ```
 
 ## Exemples d'utilisation
@@ -126,17 +136,20 @@ str_unique(vecteur_texte)
 
 ### Utilitaires
 
+encoding: https://www.youtube.com/watch?v=0AqDNXDd_Mk
+
 ```{r}
 # Na en texte
 str_replace_na(vecteur_texte)
 
 # Si deux textes sont similaires
-str_equal(vecteur_texte)
+str_equal(vecteur_texte, "chat")
 
 # Convertir en encoding (bad encoding)
-str_conv(vecteur_texte)
+str_conv(vecteur_texte, encoding = "UTF-8")
+# stringi::stri_enc_list()
 
-# Nombre de caractère par ligne
+# Nombre de caractères par ligne
 str_wrap(vecteur_texte)
 
 # Retirer les espaces aux extrémités
@@ -146,17 +159,19 @@ str_trim(vecteur_texte)
 str_dup("chat", 2)
 ```
 
-### Voir les caractères spéciaux
+### Voir les caractères spéciaux et les correspondances
 
 ```{r}
-contenu <- "
-"
+contenu <- "La\u00A0youconférence est très intéressante. Il y avait beaucoup de participants, dont des scientifiques et des entrepreneurs.\nLe sujet était le « Machine Learning » et on a discuté de ses applications dans les domaines de l'intelligence artificielle. Je me suis rendu compte que les gens étaient vraiment passionnés par ce sujet et il y avait une grande diversité d'opinions. C'était un peu frustrant, mais c'est comme ça que fonctionne la discussion."
 
-# Voir les caractèrs spéciaux
-str_view()
+# epices <- c("curry", "sel", "poivre")
+
+# Voir les caractères spéciaux
+str_view(contenu) # use_escape, pattern, match(NA,FALSE)
 ```
 
 ### str_sub(): Extraire/remplacer des sous-chaines de caractères
+
 ```{r}
 # Extraire une partie
 str_sub(texte, start = 1, end = 5) 
@@ -169,6 +184,14 @@ str_sub(des_textes, c(1, 2), c(2, 4))
 
 # Vecteur exemple 2
 str_sub_all(des_textes, start = c(1, 2), end = c(2, 4))
+```
+
+### word(): str_sub() pour les mots
+
+```{r}
+phrases <- c("Je suis content.", "Je parle allemand.")
+
+word(phrases) # start/end
 ```
 
 ### str_glue(): Ajouter/coller des valeurs au texte
@@ -188,9 +211,9 @@ str_glue("Elle s'appel {nom} et il a {age} ans.", nom = "Patience", age = 32)
 
 ```{r}
 df <- tibble(nom = c("Cindy", "Amina", "Macha"),
-age = c(50, 25, 18),
-poid = c(65, 70, 60),
-taille c(170, 160, 165))
+             age = c(50, 25, 18),
+             poid = c(65, 70, 60),
+             taille = c(170, 160, 165))
 
 df %>%
  str_glue_data("Elle s'appelle {nom}, elle a {age}, elle a un IMC de {poid/(taille^2)}")
@@ -198,19 +221,18 @@ df %>%
 
 ## Correspondance de motif (pattern matching): expressions régulières
 
-### str_detect() : Détecter les correspondances de motifs
+### str_subset(): Selectionner l'entièrté à partir d'une partie 
+
 ```{r}
 # Vecteur de fruits
 fruits <- c("pomme", "banane", "orange")
 
-# Détection
-str_detect(fruits, "an") # Regex 6 caractères / début / fin
+# Exemple simple
+str_subset(fruits, "an")
 
-# Détection au début
-str_start(fruits, "or")
-
-# Détection à la fin
-str_end(fruits, "ne")
+# Exemple avancé
+texte <- "Contactez-nous aux adresses suivantes: nom@gmail.com ou nom@outlook.com"
+str_subset(texte, "\\w+@\\w+\\.\\w+") # all
 ```
 
 ### Compter les motifs
@@ -220,7 +242,51 @@ str_end(fruits, "ne")
 str_count(fruits, "an")
 ```
 
+### Modifeurs
+
+#### fixed() / regex() / boundary() / coll()
+
+- Les motifs sont par défaut en expréssion régulière (regex)
+- Bien souvent utiliser les escapes "\\" peut régler le problème 
+- Il est aussi possible d'utiliser fixed()
+- fixed() et regex()
+
+```{r}
+# Liste
+fruits <- c("un abricot.", "une banane!", "une orange.", "Un avocat!")
+
+# Sélection: une ou un / ! ou . / fixed / ignore_Case
+str_subset(fruits, fixed("un ", ignore_case = TRUE))
+```
+
+- boundary() permet de changer le niveau d'évaluation
+
+```{r}
+# Texte avec
+grand_texte <- "Ceci est le début d'une\ngrande histoire. Quelle joie!"
+
+# Compter: boundary, word, sentence, line_break
+str_count(grand_texte)
+```
+
+### str_detect() : Détecter les correspondances de motifs
+
+```{r}
+# Vecteur de fruits
+fruits <- c("pomme", "banane", "orange")
+
+# Détection
+str_detect(fruits, "an") # Regex 6 caractères / début / fin
+
+# Détection au début
+str_starts(fruits, "or")
+
+# Détection à la fin
+str_ends(fruits, "ne")
+```
+
 ### str_extract(): Extraire les correpsondance de motifs (pattern matching)
+
 ```{r}
 # Exemple simple
 str_extract(fruits, "an") # all
@@ -230,18 +296,19 @@ texte <- "Contactez-nous aux adresses suivates: nom@gmail.com ou nom@outlook.com
 str_extract(texte, "\\w+@\\w+\\.\\w+") # all
 ```
 
-### str_subset(): Selectionner l'entièrté à partir d'une partie 
+### str_which: Quelle position correspond?
 
 ```{r}
-# Exemple simple
-str_subset(fruits, "an")
+# Vecteur de fruits
+fruits <- c("pomme", "banane", "orange")
 
-# Exemple avancé
-texte <- "Contactez-nous aux adresses suivantes: nom@gmail.com ou nom@outlook.com"
-str_subset(texte, "\\w+@\\w+\\.\\w+") # all
+# Quelle position dans le vecteur?
+str_which(fruits, "an") # negate
 ```
 
+
 ### str_replace(): Remplacer les motifs
+
 ```{r}
 texte <- "Hello world"
 str_replace(texte, "world", "WeData")
@@ -250,35 +317,66 @@ str_replace(texte, "world", "WeData")
 ### str_locate(): Détecter l'emplacement de motifs (début, fin)
 
 ```{r}
-str_locate()
-str_locate_all()
+texte <- "Hello world et hello WeData"
+
+str_locate(texte, "Hello")
+str_locate_all(texte, "ello")
 ```
 
+### str_split(): Séparation
+
 ```{r}
-str_split(); str_split_1()
-str_flatten(); str_flatten_comma()
-str_glue(); str_glue_data()
-str_which()
-word()
+texte <- "Hello world et hello WeData"
+langages <- c("R et Python", "Rust et Nim", "Julia et Javascript")
+
+# Séparation simple liste/matrice
+str_split(texte, " ", simplify = TRUE) # et/caractères/simplify
+str_split(langages, " ")
+
+# Séparation en vecteur
+str_split_1(texte, " ")
+
+# Matrice fixe
+str_split_fixed(texte, " ", 1)
+str_split_fixed(langages, " ", 1)
+
+# Un seul élément
+str_split_i(texte, " ", 1)
+str_split_i(langages, " ", 3)
+```
+
+# str_flatten: Combine un vecteur de texte en un seul texte
+
+```{r}
+langages <- c("R", "Python", "Rust", "Nim", "Julia", "Javascript")
+
+# Réduction
+str_flatten(langages) # collapse/last/na.rm
+# Avec virgule
+str_flatten_comma(langages)
 ```
 
 Control matching: https://stringr.tidyverse.org/reference/modifiers.html
 
-## Exemple pratiques
+# Example nettoyer les données de participants:
 
-### Example 1: Nettoyer des données textuelles
 ```{r}
-texte_sale <- c(" du Text  ", "AUTRE TEXTE", "MéLaNgE")
-
-texte_propre <- texte_sale %>%
-  str_trim() %>%
-  str_to_lower()
-
-texte_propre
+participants <-  
+  tibble(
+    participant = c("amarie hernández", "kaito patel", "Sofia lee", "elijah Liu", "Aria martinez", "nalini García", "Zara wang"),
+    telephone = c("0*78/456 1234", " 076 876 5432", "044 762 34 56", "076/645 4321", "(0) 91 456 7890", "041 765 43 21", "076 321 9876"),
+    email = c("amarie.hernandez@outlook.com", "kaitopatel@gmail.com", "sylee@hotmail.co.uk", "elijahliu@icloud.com", "ariamartinez@protonmail.com", "nalinishree@yahoo.co.in", "zarawang@163.com")
+  )
 ```
 
-### Example 2: Extraire des motifs textuels
+
+Nettoyage
+1. Majuscule dans les noms
+2. Une colonne prénom et une colonne nom
+3. Formater les numéros de tél. +41 xx-xxx-xx-xx
+4. Une colonne fournisseur d'email
+
 ```{r}
-emails <- c("contact@test.com", "pas d'email", "info@example.com")
-str_extract(emails, "\\w+@\\w+\\.\\w+")
+participants
 ```
+
