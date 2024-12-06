@@ -1,18 +1,27 @@
 ---
-title: "Stringr Package: Essential Functions"
+title: "Stringr en bref"
 format: html
 execute:
   echo: true
+editor: 
+  markdown: 
+    wrap: 72
 ---
 
 ## Introduction
 
-Le package stringr fait partie du tidyverse et fournit des outils cohérents et simples pour la manipulation de chaînes de caractères en R.
+Le package stringr fait partie du tidyverse et fournit des outils
+cohérents et simples pour la manipulation de chaînes de caractères en R.
 
 **Sources:**
-- stringr: https://stringr.tidyverse.org/index.html
-- Cheat sheet: https://github.com/rstudio/cheatsheets/blob/main/strings.pdf
-- Expressions régulières: https://stringr.tidyverse.org/articles/regular-expressions.html
+
+-   stringr: <https://stringr.tidyverse.org/index.html>
+
+-   Cheat sheet:
+    <https://github.com/rstudio/cheatsheets/blob/main/strings.pdf>
+
+-   Expressions régulières:
+    <https://stringr.tidyverse.org/articles/regular-expressions.html>
 
 ### Charger la librairie
 
@@ -30,11 +39,14 @@ library(tidyverse)
 vignette("stringr")
 ```
 
-La majorité des fonctions de stringr n'apportent rien de nouveau par rapport à ce que R sait déjà faire (ex. paste, strsplit, etc.). Par contre elles sont:
+La majorité des fonctions de stringr n'apportent rien de nouveau par
+rapport à ce que R sait déjà faire (ex. paste, strsplit, etc.). Par
+contre elles sont:
 
-- Explicites (str_* vs rep, grep, sub, strsplit, etc.)
-- Généralement plus rapides et constuites autour du package stringi (écrit en C++)
-- Dans la même philosophie: "Les données en premier"
+-   Explicites (str\_\* vs rep, grep, sub, strsplit, etc.)
+-   Généralement plus rapides et constuites autour du package stringi
+    (écrit en C++)
+-   Dans la même philosophie: "Les données en premier"
 
 ```{r}
 salut <- "Salut à toi!"
@@ -92,6 +104,7 @@ iris %>%
 ```
 
 ### str_c(): Concatener (joindre) des chaines de caractères
+
 ```{r}
 # Par élément
 str_c("Hello", "World", sep = " ")
@@ -221,7 +234,7 @@ df %>%
 
 ## Correspondance de motif (pattern matching): expressions régulières
 
-### str_subset(): Selectionner l'entièrté à partir d'une partie 
+### str_subset(): Selectionner l'entièrté à partir d'une partie
 
 ```{r}
 # Vecteur de fruits
@@ -246,10 +259,10 @@ str_count(fruits, "an")
 
 #### fixed() / regex() / boundary() / coll()
 
-- Les motifs sont par défaut en expréssion régulière (regex)
-- Bien souvent utiliser les escapes "\\" peut régler le problème 
-- Il est aussi possible d'utiliser fixed()
-- fixed() et regex()
+-   Les motifs sont par défaut en expréssion régulière (regex)
+-   Bien souvent utiliser les escapes "\\" peut régler le problème
+-   Il est aussi possible d'utiliser fixed()
+-   fixed() et regex()
 
 ```{r}
 # Liste
@@ -259,7 +272,7 @@ fruits <- c("un abricot.", "une banane!", "une orange.", "Un avocat!")
 str_subset(fruits, fixed("un ", ignore_case = TRUE))
 ```
 
-- boundary() permet de changer le niveau d'évaluation
+-   boundary() permet de changer le niveau d'évaluation
 
 ```{r}
 # Texte avec
@@ -305,7 +318,6 @@ fruits <- c("pomme", "banane", "orange")
 # Quelle position dans le vecteur?
 str_which(fruits, "an") # negate
 ```
-
 
 ### str_replace(): Remplacer les motifs
 
@@ -361,7 +373,7 @@ Control matching: https://stringr.tidyverse.org/reference/modifiers.html
 # Example nettoyer les données de participants:
 
 ```{r}
-participants <-  
+participants <-
   tibble(
     participant = c("amarie hernández", "kaito patel", "Sofia lee", "elijah Liu", "Aria martinez", "nalini García", "Zara wang"),
     telephone = c("0*78/456 1234", " 076 876 5432", "044 762 34 56", "076/645 4321", "(0) 91 456 7890", "041 765 43 21", "076 321 9876"),
@@ -369,14 +381,10 @@ participants <-
   )
 ```
 
-
-Nettoyage
-1. Majuscule dans les noms
-2. Une colonne prénom et une colonne nom
-3. Formater les numéros de tél. +41 xx-xxx-xx-xx
-4. Une colonne fournisseur d'email
+Nettoyage 1. Majuscule dans les noms 2. Une colonne prénom et une
+colonne nom 3. Formater les numéros de tél. +41 xx-xxx-xx-xx 4. Une
+colonne fournisseur d'email
 
 ```{r}
 participants
 ```
-
