@@ -242,7 +242,7 @@ str_subset(texte, "\\w+@\\w+\\.\\w+") # all
 str_count(fruits, "an")
 ```
 
-### Modifeurs
+### Modifieurs
 
 #### fixed() / regex() / boundary() / coll()
 

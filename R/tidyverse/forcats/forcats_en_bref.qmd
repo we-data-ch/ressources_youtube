@@ -1,0 +1,348 @@
+---
+title: "Forcats Package: Essential Functions"
+format: html
+execute:
+  echo: true
+---
+
+## Introduction
+
+Le pacakge forcats fait partie de tidyverse et fournit des outils pour travailler avec des facteurs dans R. Les facteurs sont utilisés pour traiter des variables catégorielles.
+
+Limites:
+  - Rien de nouveau
+  - Extrêmement, pratique dans des cas spécifiques (graphiques/modèles)
+  - Sous-estimé
+
+Les facteurs:
+- Sont ordonnés
+- Sont pris en compte dans les modèles
+- Sont pris en compte dans les graphiques
+
+### Ordre
+
+```{r}
+# Ordre alphabétique
+a <- c("b", "d", "a", "i")
+a <-  factor(a)
+a
+
+# Ordre numérique
+num <- factor(c(4, 3, 1, 5))
+num
+
+# Ordre numérique (premier caractère compte)
+x <- factor(c("2 chats", "3 souris", "1 chien"))
+x
+```
+
+- R enregistre les niveaux comme des chiffres pour conserver l'ordre
+
+```{r}
+# Sans la classe
+unclass(a)
+
+# Convertir en chiffre
+as.integer(a)
+```
+
+### Librairie
+
+```{r}
+# install.packages("forcats")
+library(forcats)
+# ou
+library(tidyverse)
+```
+
+
+### Dans un dataframe
+
+```{r}
+# De base dans R
+iris
+
+# Base R
+iris$Species <- factor(iris$Species)
+
+# tidyverse
+iris %>% 
+  mutate(Species = factor(Species))
+```
+
+### Pris en compte dans les modèles
+
+### Charger les librairies
+
+```{r setup}
+# install.packages("forcats")
+library(forcats)
+# or
+library(tidyverse)
+```
+
+## Fonctions-clés
+
+### Créer des facteurs (Base R)
+
+```{r}
+# Facteurs
+x <- factor(c("pomme", "banane", "pomme", "cerise"))
+
+# Valeurs
+x
+
+# Niveaux
+levels(x)
+```
+
+### Changer l'ordre
+
+```{r}
+# Manuellement
+fct_relevel(x, "banane", "pomme", "cerise")
+
+# Par fréquence d'apparition
+fct_infreq(x)
+
+# Par ordre d'apparition dans les données (défaut)
+fct_inorder(x)
+
+# Réordonner num (guillemet obligatoire)
+num <- fct_relevel(num, "3", "5")
+
+# Par ordre numérique (défault)
+num <- fct_inseq(num)
+num
+
+# Ordre inverse
+fct_rev(num)
+
+# Mélanger aléatoirement
+fct_shuffle(num)
+
+# Décaler à droite (-) ou à gauche (+)
+fct_shift(num, 0)
+```
+
+### Modèles
+
+#### Facteur
+
+```{r}
+# Ex (1)
+# de ggplot2
+mpg
+
+mpg$fl <- fct_relevel(mpg$fl, "e")
+
+# Cylindrée du moteur en litre ~ type de carburant
+model <- lm(cty ~ fl, data=mpg)
+
+summary(model)
+```
+
+#### ordered = ordonnée
+
+- Facteurs ordonnés dans les modèles linaires: https://library.virginia.edu/data/articles/understanding-ordered-factors-in-a-linear-model
+- Animation: https://websites.umich.edu/~gonzo/AnimationSite/polynomial.html
+
+```{r}
+# EX (2)
+# de ggplot2
+diamonds
+
+head(diamonds$cut)
+
+model <- lm(price ~ cut, data = diamonds)
+
+# Linéaire / QUadratique / Cubique / qualtric
+summary(model)
+
+# ordonné
+ordered(c("m", "q", "b"))
+factor(c("m", "q", "b"), ordered = TRUE)
+```
+
+## Opérations classiques
+
+## Utilitaires (1)
+
+### fct_anon(), fct_expand(), fct_drop(): gérer les labels
+
+```{r}
+animaux <- c("une gazelle", "un loup", "une gazelle", "une giraffe", "un loup", "un loup", NA)
+
+# Anonymisé
+fct_anon(animaux)
+
+# Ajouter des niveaux
+animaux2 <- fct_expand(animaux, "un aigle")
+animaux2
+
+# Retirer les niveaux non-utilisés
+fct_drop(animaux2)
+
+# Transformer les valeurs manquantes en un niveau
+animaux3 <- fct_na_level_to_value(animaux) # level
+animaux3
+
+# Transformer le Niveau NA en valeur
+fct_na_value_to_level(animaux3) # extra_level
+``` 
+
+## Utilitaires (2)
+
+### fct_cross(): croiser les valeurs
+
+```{r}
+# Croiser les catégories
+a1 <- c("a", "c", "b", "a", "c")
+a2 <- c("1", "2", "1", "2", "1")
+
+fct_cross(a1, a2)
+
+set.seed(7)
+temps <-  
+  tibble(
+  temps = rep(1:10, 4),
+  sexe = rep(c("Femme", "Homme"), each = 20),
+  groupe = rep(c("A", "B", "A", "B"), each = 10),
+  note = runif(40, 1, 3) + temps*0.5 + if_else(groupe=="B", 1.5, 0) 
+)
+
+temps %>% 
+  ggplot(aes(temps, note, colour = groupe)) +
+  geom_line()
+```
+
+### fct_count() et fct_match(): Amélioration pour les catégories
+
+```{r}
+animaux <- c("gazelle", "loup", "gazelle", "giraffe", "loup", "loup")
+
+# Compter les occurrences
+fct_count(animaux) # sort, prop
+
+# Faire les correspondances (est-ce que ces niveaux existent?)
+fct_match(animaux, c("loup", "gzelle")) # vs %in%
+```
+
+
+### fct_recode(), fct_relabel(): Renommer les valeurs spécifiques
+
+```{r}
+# Recoder des valeurs spécifique
+x <- factor(c("a", "b", "c", "a", "b"))
+
+fct_recode(x,
+  "Ananas" = "a",
+  "Banane" = "b",
+  "Cerise" = "c"
+)
+
+# Relabéliser avec une fonction
+animaux <- c("une gazelle", "un loup", "une gazelle", "une giraffe", "un loup", "un loup")
+
+fct_relabel(animaux, str_to_title) # str_remove
+```
+
+### fct_reorder(): réordonné en fonction d'une variable numérique
+
+```{r}
+# Sample data
+points <- data.frame(
+  nom = factor(c("Patience", "Aldina", "Miroslave", "Tobi")),
+  geo = c(85, 95, 78, 95),
+  math = c(84, 98, 60, 73)
+)
+
+points$nom
+
+# Réordonner avec une variable numérique
+fct_reorder(points$nom, -points$geo) # neg.desc / mean,median,sum
+
+# Réordonner avec 2 variables numérique dans un x et y 
+fct_reorder2(points$nom, points$geo, points$math)
+```
+
+#### Exemple en grahique (tidyverse)
+
+```{r}
+# reorder
+ggplot(iris, aes(Species, Sepal.Width)) +
+  geom_col()
+```
+
+- fct_reorder2() pour accorder la légende et le graphique
+
+```{r}
+chks <- subset(ChickWeight, as.integer(Chick) < 10)
+chks <- transform(chks, Chick = fct_shuffle(Chick))
+
+# Pas de correspondance entre couleurs et légendes
+ggplot(chks, aes(Time, weight, colour = Chick)) +
+  geom_point() +
+  geom_line()
+
+# Correspodnance
+ggplot(chks, aes(Time, weight, colour = fct_reorder2(Chick, Time, weight))) +
+  geom_point() +
+  geom_line()
+```
+
+## Agrégations
+
+### fct_c() et fct_collapse() : grouper des valeurs
+
+```{r}
+# Combine les facteurs
+f1 <- factor(c("a", "b"))
+f2 <- factor(c("c", "d"))
+fct_c(f1, f2)
+
+# Réduire en plus petite catégories manuellement
+x <- factor(c("pomme", "banane", "pomme", "cerise"))
+
+fct_collapse(x,
+  fruits = c("pomme", "banane"),
+  autre = "cerise"
+)
+```
+
+### fct_other(), fct_lump(): catégorie "autre"
+
+https://forcats.tidyverse.org/reference/fct_other.html
+
+```{r}
+# Grouper les valeurs rares ensembles
+x <- factor(c("a", "b", "c", "d", "e", "a", "b", "a", "b", "a"))
+x
+
+# Créer la catégorie autre avec les variables gardée ou retirées
+fct_other(x, keep = c("a", "b")) # drop, other_level
+
+# Grouper les niveaux (général)
+fct_lump(x, n = 2) # other_level
+
+# Grouper le top x de niveau
+fct_lump_n(x, n = 2)
+
+## Grouper les niveaux qui apparaisse moins d'une certaine proportion
+fct_lump_prop(x, prop = 0.5)
+
+# Grouper les niveaux avec moins d'une certaine occurence
+fct_lump_min(x, min = 2) 
+
+# Grouper les plus petits niveau en faisant en sorte que le groupe autre soit le plus petit
+fct_lump_lowfreq(x)
+```
+
+### fct_unify(): unifier les facteurs
+
+```{r}
+# Unify factor levels across multiple vectors
+x1 <- factor(c("a", "b"))
+x2 <- factor(c("b", "c"))
+fct_unify(list(x1, x2))
+```
