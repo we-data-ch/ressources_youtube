@@ -1,0 +1,151 @@
+---
+title: "lubridate en bref"
+author: "Vestin Hategekimana"
+format: html
+editor: visual
+---
+
+## lubridate
+
+## Tutoriel : Utilisation des fonctions courantes de lubridate en R
+
+### Configuration
+
+Tout d'abord, installez et chargez le package lubridate :
+
+```{r}
+install.packages("lubridate")
+library(lubridate)
+```
+
+### 1. Analyse des dates et heures
+
+lubridate facilite l'analyse des dates dans divers formats :
+
+```{r}
+# Analyser les dates
+ymd("2024-06-30")
+mdy("06/30/2024")
+dmy("30-06-2024")
+
+# Analyser les date-heures
+ymd_hms("2024-06-30 15:30:45")
+mdy_hm("06/30/2024 15:30")
+```
+
+### 2. Extraction et définition des composants date-heure
+
+Vous pouvez facilement extraire ou définir des composants spécifiques d'un objet date-heure :
+
+```{r}
+date <- ymd("2024-06-30")
+
+# Extraction des composants
+year(date)    # 2024
+month(date)   # 6
+mday(date)    # 30
+wday(date)    # 1 (Dimanche)
+
+# Définition des composants
+year(date) <- 2025
+month(date) <- 7
+```
+
+### 3. Gestion des fuseaux horaires
+
+lubridate fournit des fonctions pour travailler avec les fuseaux horaires :
+
+```{r}
+temps <- ymd_hms("2024-06-30 12:00:00", tz = "UTC")
+
+# Convertir dans un fuseau horaire différent
+with_tz(temps, tzone = "Europe/Paris")
+
+# Changer le fuseau horaire sans changer l'heure de l'horloge
+force_tz(temps, tzone = "Europe/Berlin")
+```
+
+### 4. Travailler avec les durées, intervalles et périodes
+
+lubridate offre différentes classes pour représenter les intervalles de temps :
+
+```{r}
+# Durée (nombre exact de secondes)
+duration(60, "minutes")
+
+# Intervalle (période entre deux dates spécifiques)
+interval(ymd("2024-01-01"), ymd("2024-12-31"))
+
+# Période (intervalles de temps conviviaux)
+months(3)
+years(1) + months(6) + days(15)
+```
+
+### 5. Arithmétique date-heure
+
+Effectuez des opérations arithmétiques sur les dates :
+
+```{r}
+date <- ymd("2024-06-30")
+
+# Ajouter ou soustraire du temps
+date + days(7)
+date - months(1)
+
+# Ajouter des mois en préservant le jour du mois
+date %m+% months(1)
+```
+
+### 6. Obtenir la date-heure actuelle
+
+Obtenez facilement la date et l'heure actuelles :
+
+```{r}
+now()
+today()
+```
+
+### 7. Arrondir les dates
+
+Arrondissez les dates aux unités de temps proches :
+
+```{r}
+temps <- ymd_hms("2024-06-30 15:30:45")
+
+floor_date(temps, unit = "day")
+ceiling_date(temps, unit = "hour")
+round_date(temps, unit = "minute")
+```
+
+### 8. Calcul des intervalles de temps
+
+Calculez la différence entre deux dates :
+
+```{r}
+date_debut <- ymd("2024-01-01")
+date_fin <- ymd("2024-12-31")
+
+# Différence de temps en jours
+as.duration(interval(date_debut, date_fin))
+
+# Différence en diverses unités
+time_length(interval(date_debut, date_fin), unit = "days")
+time_length(interval(date_debut, date_fin), unit = "months")
+```
+
+### 9. Travailler avec les années ou semaines fiscales
+
+lubridate peut gérer des représentations de dates non standard :
+
+```{r}
+# Obtenir l'année fiscale pour une date (en supposant que l'année fiscale commence en juillet)
+annee_fiscale <- function(date) {
+  ifelse(month(date) < 7, year(date), year(date) + 1)
+}
+
+annee_fiscale(ymd("2024-06-30"))  # 2024
+annee_fiscale(ymd("2024-07-01"))  # 2025
+
+# Obtenir la semaine de l'année
+week(ymd("2024-06-30"))
+```
