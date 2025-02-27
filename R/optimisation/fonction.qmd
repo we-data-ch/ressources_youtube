@@ -1,0 +1,125 @@
+---
+title: "Introduction aux fonctions en R pour l'optimisation"
+date: "2024-12-19"
+output: html
+---
+
+# Introduction
+
+blocs réutLes fonctions constituent une composante essentielle en R. Elles permettent d'emballer du code dans des ilisables, rendant le code plus modulaire, plus lisible et plus facile à maintenir.
+
+# Définition d'une Fonction
+
+En R, vous définissez une fonction en utilisant le mot-clé `function`. Voici la syntaxe de base :
+
+```{r}
+# snippets
+nom_de_la_fonction <- function(arg1, arg2, ...) {
+  # Corps de la fonction
+  # Votre code ici
+  return(valeur)
+}
+```
+
+Commençons par un exemple simple :
+
+Bonjour
+
+```{r}
+# Dire bonjour
+bonjour <- function(){
+  cat("hello", "bonjour")
+}
+
+bonjour()
+```
+
+plus
+
+```{r}
+# Définir une fonction pour additionner deux nombres
+plus <- function(a=0, b=0) {
+  a + b # court
+}
+
+# Utiliser la fonction
+plus(3, 6) # paramètres
+
+plus(3)
+```
+
+# Arguments des Fonctions
+
+Les fonctions peuvent prendre plusieurs arguments. Vous pouvez également définir des valeurs par défaut pour les arguments :
+
+```{r}
+# Définir une fonction avec des arguments par défaut
+salut <- function(name = "World") {
+  paste("Hello,", name)
+}
+
+# Utiliser la fonction
+salut("Prospère")
+
+salut()
+```
+
+# Retour de Valeurs
+
+Les fonctions peuvent retourner des valeurs en utilisant la déclaration `return`. Si aucune déclaration `return` n'est utilisée, l'expression évaluée en dernier est retournée par défaut :
+
+```{r}
+# Définir une fonction pour calculer le carré d'un nombre
+carree <- function(x) {
+  x + x
+  x * x # sans
+}
+
+# Utiliser la fonction
+carree(4)
+```
+
+# Fonctions courtes
+
+Il est possible de créer des fonction plus petites pour économiser de l'espace.
+
+```{r}
+# Exemple (une ligne, courte, pipe)
+multiplication <- \(x, y) x*y
+
+multiplication(2, 6)
+```
+
+# Fonctions Anonymes
+
+Parfois, vous pouvez vouloir créer une fonction sans lui donner de nom. Ces fonctions sont appelées anonymes et sont souvent utilisées dans des situations où une fonction est nécessaire temporairement :
+
+```{r}
+# Utiliser une fonction anonyme avec lapply
+nombre <- list(1, 2, 3, 4)
+
+lapply(nombre, \(x) x * x)
+```
+
+# Exemple Pratique : Transformation des Données
+
+Voici un exemple pratique où les fonctions peuvent vous aider à transformer efficacement vos données. Supposons que vous avez un tableau de données et que vous voulez appliquer une transformation à l'une de ses colonnes :
+
+```{r}
+# Charger le package dplyr pour la manipulation des données
+library(dplyr)
+
+# Créer un tableau de données d'exemple
+donnees <- data.frame(
+  id = 1:5,
+  valeur = c(10, 20, 30, 40, 50)
+)
+
+# Définir une fonction pour transformer la colonne 'valeur'
+transformer_valeur <- function(valeur) {
+  valeur * 2
+}
+
+# Utiliser la fonction
+transformer_valeur(donnees$valeur)
+```

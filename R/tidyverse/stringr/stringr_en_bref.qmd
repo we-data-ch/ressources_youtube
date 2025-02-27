@@ -5,20 +5,19 @@ execute:
   echo: true
 editor: 
   markdown: 
-    wrap: 72
+    wrap: 80
 ---
 
 ## Introduction
 
-Le package stringr fait partie du tidyverse et fournit des outils
-cohérents et simples pour la manipulation de chaînes de caractères en R.
+Le package stringr fait partie du tidyverse et fournit des outils cohérents et
+simples pour la manipulation de chaînes de caractères en R.
 
 **Sources:**
 
 -   stringr: <https://stringr.tidyverse.org/index.html>
 
--   Cheat sheet:
-    <https://github.com/rstudio/cheatsheets/blob/main/strings.pdf>
+-   Cheat sheet: <https://github.com/rstudio/cheatsheets/blob/main/strings.pdf>
 
 -   Expressions régulières:
     <https://stringr.tidyverse.org/articles/regular-expressions.html>
@@ -26,7 +25,7 @@ cohérents et simples pour la manipulation de chaînes de caractères en R.
 ### Charger la librairie
 
 ```{r setup}
-# install.packages("stringer")
+# install.packages("stringr")
 library(stringr)
 # ou
 library(tidyverse)
@@ -39,13 +38,12 @@ library(tidyverse)
 vignette("stringr")
 ```
 
-La majorité des fonctions de stringr n'apportent rien de nouveau par
-rapport à ce que R sait déjà faire (ex. paste, strsplit, etc.). Par
-contre elles sont:
+La majorité des fonctions de stringr n'apportent rien de nouveau par rapport à
+ce que R sait déjà faire (ex. paste, strsplit, etc.). Par contre elles sont:
 
 -   Explicites (str\_\* vs rep, grep, sub, strsplit, etc.)
--   Généralement plus rapides et constuites autour du package stringi
-    (écrit en C++)
+-   Généralement plus rapides et constuites autour du package stringi (écrit en
+    C++)
 -   Dans la même philosophie: "Les données en premier"
 
 ```{r}
@@ -59,7 +57,7 @@ sub("toi", "WeData", salut)
 str_replace(salut, "toi", "WeData")
 
 # Permet d'enchaîner les opérations ----
-"HELLO!" |>
+"HELLO!" |> 
     str_to_title() |>
     str_replace("!", " ") |>
     str_c("world")
@@ -74,7 +72,7 @@ str_replace(salut, "toi", "WeData")
 texte <- "Hello, World!"
 
 # Longueur en caractères
-str_length(texte) # str_width() "espace occupé"
+str_width(texte) # str_width() "espace occupé"
 ```
 
 ## Exemples d'utilisation
@@ -100,14 +98,14 @@ iris %>%
 
 # Filtrer les espèces avec moins de 5 caractères
 iris %>%
-    filter(str_length(Species) >= 5)
+    filter(str_length(Species) >= 8)
 ```
 
 ### str_c(): Concatener (joindre) des chaines de caractères
 
 ```{r}
 # Par élément
-str_c("Hello", "World", sep = " ")
+str_c("Hello", "World")
 
 # En un seul résultat
 str_c(c("a", "b", "c"), collapse = ", ")
@@ -133,18 +131,23 @@ str_to_sentence(vecteur_texte)
 str_to_title(vecteur_texte)
 ```
 
-### Ordonner les lsites
+### Ordonner les listes
 
 ```{r}
+alpha <- c("r", NA, "d", "a", "f", "b")
+
 # Ordonner
-str_sort(vecteur_texte)
+str_sort(alpha)
 ```
 
 ### Valeurs uniques
 
 ```{r}
+a <- c("an", "b", "An")
+
 # Unique mais en plus puissant
-str_unique(vecteur_texte)
+str_unique(a, ignore_case = TRUE)
+unique(a)
 ```
 
 ### Utilitaires
@@ -163,31 +166,33 @@ str_conv(vecteur_texte, encoding = "UTF-8")
 # stringi::stri_enc_list()
 
 # Nombre de caractères par ligne
-str_wrap(vecteur_texte)
+str_wrap(vecteur_texte[4], width = 3)
 
 # Retirer les espaces aux extrémités
-str_trim(vecteur_texte)
+str_trim(vecteur_texte[3])
 
 # Dupliquer un text x fois
-str_dup("chat", 2)
+str_dup("chat", 3)
 ```
 
 ### Voir les caractères spéciaux et les correspondances
 
 ```{r}
-contenu <- "La\u00A0youconférence est très intéressante. Il y avait beaucoup de participants, dont des scientifiques et des entrepreneurs.\nLe sujet était le « Machine Learning » et on a discuté de ses applications dans les domaines de l'intelligence artificielle. Je me suis rendu compte que les gens étaient vraiment passionnés par ce sujet et il y avait une grande diversité d'opinions. C'était un peu frustrant, mais c'est comme ça que fonctionne la discussion."
+contenu <- "La\u00A0conférence est très intéressante. Il y avait beaucoup de participants, dont des scientifiques et des entrepreneurs.\nLe sujet était le « Machine Learning » et on a discuté de ses applications dans les domaines de l'intelligence artificielle. Je me suis rendu compte que les gens étaient vraiment passionnés par ce sujet et il y avait une grande diversité d'opinions. C'était un peu frustrant, mais c'est comme ça que fonctionne la discussion."
 
-# epices <- c("curry", "sel", "poivre")
+contenu
+
+epices <- c("curry", "sel", "poivre")
 
 # Voir les caractères spéciaux
-str_view(contenu) # use_escape, pattern, match(NA,FALSE)
+str_view(contenu, fixed("e")) # pattern, match
 ```
 
 ### str_sub(): Extraire/remplacer des sous-chaines de caractères
 
 ```{r}
 # Extraire une partie
-str_sub(texte, start = 1, end = 5) 
+str_sub(texte, 1, 2) 
 
 # Extraire deux parties
 str_sub(texte, c(1, 8), c(6, 14))
@@ -204,7 +209,7 @@ str_sub_all(des_textes, start = c(1, 2), end = c(2, 4))
 ```{r}
 phrases <- c("Je suis content.", "Je parle allemand.")
 
-word(phrases) # start/end
+word(phrases, 2, 3) # start/end
 ```
 
 ### str_glue(): Ajouter/coller des valeurs au texte
@@ -212,12 +217,12 @@ word(phrases) # start/end
 ```{r}
 # Exemple 1
 nom <- "Idriss"
-age <- 20
+age <- 25
 
-str_glue("Il s'appel {nom} et il a {age} ans.") # calcule
+str_glue("Il s'appelle {nom} et il a {age} ans.") # calcule
 
 # Exemple 2
-str_glue("Elle s'appel {nom} et il a {age} ans.", nom = "Patience", age = 32)
+str_glue("Elle s'appelle {nom} et elle a {age} ans.", nom = "Patience", age = 32)
 ```
 
 ### str_glue_data(): Ajouter/coller des valeurs au texte par dataframe
@@ -226,10 +231,10 @@ str_glue("Elle s'appel {nom} et il a {age} ans.", nom = "Patience", age = 32)
 df <- tibble(nom = c("Cindy", "Amina", "Macha"),
              age = c(50, 25, 18),
              poid = c(65, 70, 60),
-             taille = c(170, 160, 165))
+             taille = c(1.70, 1.60, 1.65))
 
 df %>%
- str_glue_data("Elle s'appelle {nom}, elle a {age}, elle a un IMC de {poid/(taille^2)}")
+ str_glue_data("{nom}, elle a {age} ans et elle a un IMC de {round(poid/(taille^2))}")
 ```
 
 ## Correspondance de motif (pattern matching): expressions régulières
@@ -244,8 +249,9 @@ fruits <- c("pomme", "banane", "orange")
 str_subset(fruits, "an")
 
 # Exemple avancé
-texte <- "Contactez-nous aux adresses suivantes: nom@gmail.com ou nom@outlook.com"
-str_subset(texte, "\\w+@\\w+\\.\\w+") # all
+emails <- c("Mon adresse", "nom@gmail.com", "nom@outlook.com")
+
+str_subset(emails, "\\w+@\\w+\\.\\w+") # all
 ```
 
 ### Compter les motifs
@@ -276,10 +282,10 @@ str_subset(fruits, fixed("un ", ignore_case = TRUE))
 
 ```{r}
 # Texte avec
-grand_texte <- "Ceci est le début d'une\ngrande histoire. Quelle joie!"
+grand_texte <- "Ceci est le début d'\nune grande histoire. Quelle joie!"
 
-# Compter: boundary, word, sentence, line_break
-str_count(grand_texte)
+# Compter: boundary, word, sentence
+str_count(grand_texte, boundary("sentence"))
 ```
 
 ### str_detect() : Détecter les correspondances de motifs
@@ -289,7 +295,7 @@ str_count(grand_texte)
 fruits <- c("pomme", "banane", "orange")
 
 # Détection
-str_detect(fruits, "an") # Regex 6 caractères / début / fin
+str_detect(fruits, "ne$") # Regex 6 caractères / début / fin
 
 # Détection au début
 str_starts(fruits, "or")
@@ -302,11 +308,12 @@ str_ends(fruits, "ne")
 
 ```{r}
 # Exemple simple
-str_extract(fruits, "an") # all
+str_extract_all(fruits, "an") # all
 
 # Exemple avancé
 texte <- "Contactez-nous aux adresses suivates: nom@gmail.com ou nom@outlook.com"
-str_extract(texte, "\\w+@\\w+\\.\\w+") # all
+
+str_extract_all(texte, "\\w+@\\w+\\.\\w+") # all
 ```
 
 ### str_which: Quelle position correspond?
@@ -322,14 +329,14 @@ str_which(fruits, "an") # negate
 ### str_replace(): Remplacer les motifs
 
 ```{r}
-texte <- "Hello world"
-str_replace(texte, "world", "WeData")
+texte <- "Hello world!"
+str_replace_all(texte, "o", "a")
 ```
 
 ### str_locate(): Détecter l'emplacement de motifs (début, fin)
 
 ```{r}
-texte <- "Hello world et hello WeData"
+texte <- "Hello world et hello WeData!"
 
 str_locate(texte, "Hello")
 str_locate_all(texte, "ello")
@@ -338,34 +345,36 @@ str_locate_all(texte, "ello")
 ### str_split(): Séparation
 
 ```{r}
-texte <- "Hello world et hello WeData"
+texte <- "Hello world et hello WeData!"
+
 langages <- c("R et Python", "Rust et Nim", "Julia et Javascript")
 
 # Séparation simple liste/matrice
-str_split(texte, " ", simplify = TRUE) # et/caractères/simplify
-str_split(langages, " ")
+str_split(texte, " ") # et/caractères/simplify
+str_split(langages, " ", simplify = TRUE)
 
 # Séparation en vecteur
 str_split_1(texte, " ")
 
 # Matrice fixe
-str_split_fixed(texte, " ", 1)
-str_split_fixed(langages, " ", 1)
+str_split_fixed(texte, " ", 2)
+str_split_fixed(langages, " ", 3)
 
 # Un seul élément
-str_split_i(texte, " ", 1)
+str_split_i(texte, " ", 5)
 str_split_i(langages, " ", 3)
 ```
 
 # str_flatten: Combine un vecteur de texte en un seul texte
 
 ```{r}
-langages <- c("R", "Python", "Rust", "Nim", "Julia", "Javascript")
+langages <- c("R", "Python", "Rust", "Nim", NA, "Julia", "Javascript")
 
 # Réduction
-str_flatten(langages) # collapse/last/na.rm
+str_flatten(langages, collapse = ", ", last = " et ") # collapse/last/na.rm
+
 # Avec virgule
-str_flatten_comma(langages)
+str_flatten_comma(langages, last = " et ")
 ```
 
 Control matching: https://stringr.tidyverse.org/reference/modifiers.html
@@ -381,10 +390,44 @@ participants <-
   )
 ```
 
-Nettoyage 1. Majuscule dans les noms 2. Une colonne prénom et une
-colonne nom 3. Formater les numéros de tél. +41 xx-xxx-xx-xx 4. Une
-colonne fournisseur d'email
+Nettoyage
+
+1.  Majuscule dans les noms
+
+2.  Une colonne prénom et une colonne nom
+
+3.  Formater les numéros de tél. +41 xx-xxx-xx-xx
+
+4.  Une colonne fournisseur d'email
 
 ```{r}
-participants
+  
+participants %>% 
+  mutate(
+    participant = str_to_title(participant),
+    prenom = str_split_i(participant, " ", 1),
+    nom = str_split_i(participant, " ", 2),
+    telephone = str_remove_all(telephone, fixed("*")),
+    telephone = str_remove_all(telephone, fixed("/")),
+    telephone = str_remove_all(telephone, fixed("(")),
+    telephone = str_remove_all(telephone, fixed(")")),
+    telephone = str_remove_all(telephone, fixed(" ")),
+    telephone = str_remove_all(telephone, fixed("0")),
+    telephone = str_c(
+      "+41 ",
+      str_sub(telephone, 1, 2),
+      "-",
+      str_sub(telephone, 3, 5),
+      "-",
+      str_sub(telephone, 6, 7),
+      "-",
+      str_sub(telephone, 8, 9)
+      ),
+    email = str_split_i(email, "@", 2),
+    email = str_remove(email, fixed(".com")),
+    email = str_remove(email, fixed(".co.uk")),
+    email = str_remove(email, fixed(".co.in")),
+    .after = participant
+  ) %>% 
+  select(-participant)
 ```
