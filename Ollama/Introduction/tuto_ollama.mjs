@@ -1,4 +1,4 @@
-// Source: 
+// Source: https://github.com/ollama/ollama-js
 import ollama from 'ollama'
 
 // Fonctions de base

@@ -1,4 +1,4 @@
-# Source: 
+# Source: https://github.com/ollama/ollama-python
 import ollama
 
 # Fonctions de base

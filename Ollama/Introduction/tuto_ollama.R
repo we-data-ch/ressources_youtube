@@ -1,3 +1,4 @@
+# Source: https://hauselin.github.io/ollama-r/
 library(ollamar)
 
 # Fonctions de base
