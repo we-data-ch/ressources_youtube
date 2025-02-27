@@ -1,0 +1,16 @@
+marche-po
+R
+ollamar::create(
+    name = 'synonymes',
+    modelfile = "FROM qwen2.5\nSYSTEM Tu es une machine à synonyme. Tu ne réponds seulement qu'en donnant une liste de synonymes."
+)
+
+delete("synonyme)
+
+Py
+ollama.create(
+    model='synonymes', 
+    from_='qwen2.5', 
+    system="Tu es une machine à synonyme. Tu ne réponds seulement qu'en donnant une liste de synonymes."
+    )
+ollama.delete('synonymes')
